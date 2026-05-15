@@ -15,7 +15,6 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Roboto', sans-serif; margin: 0; background-color: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
 
-        /* HEADER */
         header { background: var(--primary); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 20; flex-shrink: 0; transition: background 0.3s; }
         .header-left { display: flex; align-items: center; gap: 10px; }
         .header-left h1 { margin: 0; font-size: 1.3rem; font-weight: bold; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px; }
@@ -23,14 +22,11 @@
         .icon-btn { cursor: pointer; font-size: 1.6rem; padding: 6px; border-radius: 50%; transition: background 0.2s; display: flex; align-items: center; justify-content: center; color: white;}
         .icon-btn:active { background: rgba(255,255,255,0.2); }
 
-        /* SCREENS */
         .screen { flex: 1; overflow-y: auto; display: none; flex-direction: column; position: relative; padding: 15px; }
         .screen.active { display: flex; animation: fadeIn 0.3s; }
 
-        /* RESPONSIVE GRID FOR CARDS */
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 90px; }
 
-        /* CLASS CARDS */
         .class-card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; overflow: hidden; transition: transform 0.1s; border-left: 6px solid var(--status-none); cursor: pointer; }
         .class-card:active { transform: scale(0.98); }
         .class-card.status-stable { border-left-color: var(--status-stable); }
@@ -47,11 +43,9 @@
         .card-action-btn.export { color: #607D8B; }
         .card-action-btn.delete { color: var(--danger); border-left: 1px solid #eee; }
 
-        /* FAB */
         .fab { position: fixed; bottom: 30px; right: 30px; background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: none; z-index: 30; transition: transform 0.2s; cursor: pointer; }
         .fab:active { transform: scale(0.9); }
 
-        /* FORMS & SETTINGS */
         .settings-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .settings-title { font-size: 1.1rem; color: var(--primary-dark); font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
         
@@ -69,7 +63,6 @@
         .btn-success { background: var(--success); }
         .btn-danger { background: white; color: var(--danger); border: 2px solid var(--danger); }
 
-        /* TOGGLE SWITCH */
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; background: #fafafa; border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid #eee;}
         .toggle-label { font-size: 0.95rem; color: #333; font-weight: bold; }
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
@@ -79,7 +72,6 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        /* THEME SELECTOR */
         .theme-selector { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: #fafafa; border-radius: 12px; border: 1px solid #eee; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; padding: 0; background: none; outline: none; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
@@ -88,11 +80,23 @@
         .theme-info span { font-size: 0.95rem; font-weight: bold; color: #333; }
         .theme-info small { font-size: 0.75rem; color: #777; }
 
-        /* BADGES */
         .status-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; color: white; }
         .bg-none { background: var(--status-none); } .bg-stable { background: var(--status-stable); } .bg-unstable { background: var(--status-unstable); }
 
-        /* MODALS */
+        /* TABS (TELA DA TURMA) */
+        .tabs { display: flex; border-bottom: 2px solid #e0e0e0; margin-bottom: 15px; }
+        .tab-btn { flex: 1; background: none; border: none; padding: 12px; font-weight: bold; color: #777; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: var(--primary-dark); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s; }
+
+        /* HISTÓRICO CARDS */
+        .history-card { background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .history-date { font-weight: bold; color: var(--primary-dark); margin-bottom: 10px; font-size: 1.1rem; border-bottom: 1px dashed #ccc; padding-bottom: 5px;}
+        .history-item { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+        .history-item.fuga { color: var(--danger); font-weight: bold; }
+        .history-absent { color: #888; font-style: italic; font-size: 0.85rem; padding: 5px 0; }
+
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(2px); }
         .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -116,6 +120,7 @@
         <h1 id="header-title">SLGestão</h1>
     </div>
     <div class="header-icons" id="home-icons">
+        <span class="icon-btn material-icons" onclick="abrirModalUploadGlobal()" title="Importar Diário">file_upload</span>
         <span class="icon-btn material-icons" onclick="navTo('dashboard')" title="Dashboard">dashboard</span>
         <span class="icon-btn material-icons" onclick="navTo('settings')" title="Configurações Universais">settings</span>
     </div>
@@ -127,14 +132,17 @@
 </div>
 
 <div id="screen-class" class="screen">
-    <div class="grid-container" style="padding-bottom: 20px;">
-        
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('config')" id="tab-btn-config">Configurações</button>
+        <button class="tab-btn" onclick="switchTab('history')" id="tab-btn-history">Evolução Diária</button>
+    </div>
+
+    <div id="tab-content-config" class="tab-content active grid-container" style="padding-bottom: 20px;">
         <div class="settings-card">
             <h3 class="settings-title"><span class="material-icons">school</span> Dados da Turma</h3>
             <div class="input-group"><label>Nome da Turma</label><input type="text" id="class-name"></div>
             <div class="input-group"><label>Professor(a) Responsável</label><input type="text" id="class-prof"></div>
             <div class="input-group"><label>WhatsApp do Professor</label><input type="tel" id="class-wpp" placeholder="DDD + Número"></div>
-            
             <div class="input-group">
                 <label>Status da Intervenção</label>
                 <select id="class-status">
@@ -151,7 +159,6 @@
                 <span class="toggle-label">Usar Configuração Universal</span>
                 <label class="switch"><input type="checkbox" id="class-use-universal" onchange="toggleCustomLimits()"><span class="slider"></span></label>
             </div>
-            
             <div id="custom-limits-container" style="display:none; padding-top:10px; border-top: 1px dashed #ccc;">
                 <div class="input-group"><label>Máx. Alunos Fora Simultaneamente</label><input type="number" id="class-max-out" min="1" max="10"></div>
                 <div class="limit-row"><label>Banheiro</label><input type="number" id="class-lim-banheiro" min="0"></div>
@@ -162,33 +169,40 @@
 
         <div class="settings-card">
             <h3 class="settings-title"><span class="material-icons">groups</span> Alunos & Transporte</h3>
-            <p style="font-size:0.8rem; color:#666; margin-top:0;">Cole a lista. Formato: <code>Nome - Transporte</code> ou apenas <code>Nome</code>. Separe por vírgula ou quebra de linha.</p>
+            <p style="font-size:0.8rem; color:#666; margin-top:0;">Cole a lista. Formato: <code>Nome - Transporte</code> ou apenas <code>Nome</code>.</p>
             <div class="input-group"><textarea id="class-students-raw" placeholder="Ex: João - Van, Maria - 2, Pedro" style="height: 120px; resize:none;"></textarea></div>
         </div>
 
         <div class="settings-card" style="background: transparent; box-shadow: none; padding: 0;">
             <button class="btn-action btn-success" onclick="salvarTurmaAtual()"><span class="material-icons">save</span> SALVAR ALTERAÇÕES</button>
             <button class="btn-action" style="background:#2196F3;" onclick="enviarApresentacao()"><span class="material-icons">campaign</span> ENVIAR PITCH & APK (WPP)</button>
-            <button class="btn-action btn-json" style="background:#607D8B;" onclick="exportarJsonTurma()"><span class="material-icons">data_object</span> EXPORTAR SETTING (JSON)</button>
+            <button class="btn-action" style="background:#607D8B;" onclick="exportarJsonTurma()"><span class="material-icons">data_object</span> EXPORTAR SETTING (JSON)</button>
         </div>
+    </div>
 
+    <div id="tab-content-history" class="tab-content">
+        <div class="settings-card">
+            <h3 class="settings-title"><span class="material-icons">add_chart</span> Inserir Diário do Professor</h3>
+            <p style="font-size:0.8rem; color:#666; margin-top:0;">Cole aqui o código JSON que o professor enviou pelo WhatsApp no fim do dia.</p>
+            <div class="input-group"><textarea id="import-diario-class" style="height:100px; font-family:monospace; font-size:0.8rem;" placeholder='{"app":"SaidaLogica", "logs": [...]}'></textarea></div>
+            <button class="btn-action btn-success" onclick="processarDiarioTurma()"><span class="material-icons">file_download</span> PROCESSAR E ARQUIVAR</button>
+        </div>
+        
+        <div class="settings-card" style="background: transparent; box-shadow: none; padding: 0;">
+            <h3 style="color:var(--primary-dark); margin-bottom:10px;">Evolução Procedural</h3>
+            <button class="btn-action" style="background:#607D8B; margin-bottom: 15px;" onclick="copiarRelatorioText()"><span class="material-icons">content_copy</span> COPIAR RELATÓRIO P/ TEXTO</button>
+            <div id="history-timeline-container">
+                </div>
+        </div>
     </div>
 </div>
 
 <div id="screen-settings" class="screen">
     <div class="grid-container" style="padding-bottom: 20px;">
-        
         <div class="settings-card">
             <h3 class="settings-title"><span class="material-icons">palette</span> Identidade Visual</h3>
-            <div class="theme-selector">
-                <input type="color" id="theme-color-picker" value="#FF9800" oninput="aplicarTema(this.value)">
-                <div class="theme-info">
-                    <span>Cor Base do Sistema</span>
-                    <small>Aplica-se imediatamente a todo o App.</small>
-                </div>
-            </div>
+            <div class="theme-selector"><input type="color" id="theme-color-picker" value="#FF9800" oninput="aplicarTema(this.value)"><div class="theme-info"><span>Cor Base do Sistema</span><small>Aplica-se imediatamente a todo o App.</small></div></div>
         </div>
-
         <div class="settings-card">
             <h3 class="settings-title"><span class="material-icons">public</span> Regras Universais (Padrão)</h3>
             <div class="input-group"><label>Máx. Alunos Fora (Padrão)</label><input type="number" id="univ-max-out" min="1"></div>
@@ -196,19 +210,12 @@
             <div class="limit-row"><label>Água</label><input type="number" id="univ-lim-agua" min="0"></div>
             <div class="limit-row"><label>Externalidade</label><input type="number" id="univ-lim-externo" min="0"></div>
         </div>
-
         <div class="settings-card">
             <h3 class="settings-title"><span class="material-icons">mark_email_read</span> Mensagem de Apresentação (Pitch)</h3>
             <p style="font-size:0.8rem; color:#666; margin-top:0;">Use <b>[PROF]</b> e <b>[TURMA]</b> para o sistema preencher sozinho na hora de enviar.</p>
-            <div class="input-group">
-                <textarea id="config-pitch" style="height: 120px; resize:none;" placeholder="Olá [PROF], segue o app da turma [TURMA]..."></textarea>
-            </div>
-            <div class="input-group">
-                <label>Link para Download do APK (Drive, MediaFire, etc)</label>
-                <input type="url" id="config-apk-link" placeholder="https://...">
-            </div>
+            <div class="input-group"><textarea id="config-pitch" style="height: 120px; resize:none;" placeholder="Olá [PROF]..."></textarea></div>
+            <div class="input-group"><label>Link para Download do APK (Drive, MediaFire, etc)</label><input type="url" id="config-apk-link" placeholder="https://..."></div>
         </div>
-
         <div class="settings-card">
             <button class="btn-action btn-success" onclick="salvarConfiguracoesUniversais()">SALVAR CONFIGURAÇÕES</button>
             <button class="btn-action btn-danger" style="margin-top: 20px; background: transparent; color: var(--danger); border: 1px solid var(--danger);" onclick="confirmarResetGeral()">RESET DE FÁBRICA</button>
@@ -225,8 +232,7 @@
             <div><div style="font-size:2rem; color:var(--status-none);" id="dash-no">0</div>Aguardando</div>
         </div>
     </div>
-    <div id="dash-lists" class="grid-container">
-        </div>
+    <div id="dash-lists" class="grid-container"></div>
 </div>
 
 <div id="modal-add-turma" class="modal-overlay">
@@ -239,16 +245,16 @@
     </div>
 </div>
 
-<div id="modal-import" class="modal-overlay">
+<div id="modal-upload-global" class="modal-overlay">
     <div class="modal-content">
-        <div class="modal-header"><h2><span class="material-icons">download</span> Importar Dados</h2><span class="icon-btn material-icons" onclick="fecharModais()">close</span></div>
-        <p style="font-size:0.85rem; color:#666; margin-top:-10px;">Cole o JSON gerado em outro dispositivo para importar turmas e configurações.</p>
-        <div class="input-group"><textarea id="input-import" style="height:150px; font-family:monospace; font-size:0.8rem;" placeholder='{"limites": {...}, "alunos": [...]}'></textarea></div>
-        
-        <div style="display:flex; gap:10px; margin-top: 20px;">
-            <button class="btn-action btn-danger" style="flex:1; margin:0; background:transparent; color:var(--danger); border:2px solid var(--danger);" onclick="fecharModais()">CANCELAR</button>
-            <button class="btn-action btn-success" style="flex:2; margin:0;" onclick="processarImportacao()">SINCRONIZAR</button>
+        <div class="modal-header"><h2><span class="material-icons" style="color:var(--primary);">file_upload</span> Anexar Diário</h2><span class="icon-btn material-icons" onclick="fecharModais()">close</span></div>
+        <p style="font-size:0.85rem; color:#666; margin-top:-10px;">Cole o JSON do professor. O sistema arquivará na turma correta automaticamente, cruzando pelo nome da sala.</p>
+        <div class="input-group"><textarea id="input-upload-global" style="height:150px; font-family:monospace; font-size:0.8rem;"></textarea></div>
+        <div class="input-group"><label>Qual turma é essa? (Garantia)</label>
+            <select id="select-turma-global">
+                </select>
         </div>
+        <button class="btn-action btn-success" onclick="processarUploadGlobal()">ANEXAR E ARQUIVAR</button>
     </div>
 </div>
 
@@ -258,30 +264,28 @@
 </div>
 
 <div id="toast">Mensagem</div>
+<textarea id="clipboard-area" style="position: absolute; left: -9999px;"></textarea>
 
 <script>
-    // --- ESTADO INICIAL E VACINA (FALLBACKS) ---
+    // --- ESTADO INICIAL ---
     const DEFAULT_CONFIG = {
         themeHex: '#FF9800',
         universalLimits: { banheiro: 2, agua: 2, externo: 1 },
         maxOut: 1,
-        pitchMsg: "Olá [PROF], tudo bem?\n\nSegue o link do aplicativo Saída Lógica configurado exclusivamente para a turma [TURMA].\n\nQualquer dúvida, estou à disposição!",
+        pitchMsg: "Olá [PROF], tudo bem?\n\nSegue o link do aplicativo SaídaLógica configurado exclusivamente para a turma [TURMA].\n\nQualquer dúvida, estou à disposição!",
         apkLink: "https://"
     };
 
     let db;
-    try {
-        db = JSON.parse(localStorage.getItem('slgestao_db'));
-    } catch(e) {
-        db = null;
-    }
-    
-    // Normalização completa de Dados
+    try { db = JSON.parse(localStorage.getItem('slgestao_db')); } catch(e) { db = null; }
     if (!db) db = { classes: [], config: DEFAULT_CONFIG };
     if (!db.classes) db.classes = [];
     if (!db.config) db.config = {};
     db.config = { ...DEFAULT_CONFIG, ...db.config };
     if (!db.config.universalLimits) db.config.universalLimits = DEFAULT_CONFIG.universalLimits;
+
+    // Migração: Garante que toda turma tenha o array de histórico evolutivo
+    db.classes.forEach(c => { if(!c.evolution) c.evolution = []; });
 
     let currentClassId = null;
     let dialogCallback = null;
@@ -293,20 +297,14 @@
         return rgb;
     }
     function aplicarTema(hex) {
-        if(!hex) hex = '#FF9800'; // Fallback de cor
+        if(!hex) hex = '#FF9800';
         const root = document.documentElement; 
-        root.style.setProperty('--primary', hex); 
-        root.style.setProperty('--primary-dark', escurecerCor(hex, -0.2)); 
-        root.style.setProperty('--primary-light', hex + '26'); 
+        root.style.setProperty('--primary', hex); root.style.setProperty('--primary-dark', escurecerCor(hex, -0.2)); root.style.setProperty('--primary-light', hex + '26'); 
         const metaTheme = document.getElementById('meta-theme-color');
         if (metaTheme) metaTheme.setAttribute('content', hex);
     }
 
-    function init() {
-        aplicarTema(db.config.themeHex);
-        renderHome();
-    }
-    
+    function init() { aplicarTema(db.config.themeHex); renderHome(); }
     function save() { localStorage.setItem('slgestao_db', JSON.stringify(db)); }
 
     // --- NAVIGATION ---
@@ -321,7 +319,7 @@
             const cls = db.classes.find(c => c.id === currentClassId);
             title.innerText = `Turma: ${cls.className}`; btnBack.style.display = 'flex'; homeIcons.style.display = 'none'; loadClassData(cls);
         } else if (screenId === 'settings') {
-            title.innerText = "Configurações Globais"; btnBack.style.display = 'flex'; homeIcons.style.display = 'flex'; homeIcons.innerHTML = `<span class="icon-btn material-icons" onclick="abrirModalImport()" title="Importar JSON">download</span>`; loadUniversalSettings();
+            title.innerText = "Configurações Globais"; btnBack.style.display = 'flex'; homeIcons.style.display = 'none'; loadUniversalSettings();
         } else if (screenId === 'dashboard') {
             title.innerText = "Dashboard (Visão Macro)"; btnBack.style.display = 'flex'; homeIcons.style.display = 'none'; renderDashboard();
         }
@@ -330,10 +328,9 @@
     function handleBackNavigation() {
         const activeScreen = document.querySelector('.screen.active').id;
         if (activeScreen !== 'screen-home') {
-            document.getElementById('home-icons').innerHTML = `<span class="icon-btn material-icons" onclick="navTo('dashboard')" title="Dashboard">dashboard</span><span class="icon-btn material-icons" onclick="navTo('settings')" title="Configurações">settings</span>`;
+            document.getElementById('home-icons').innerHTML = `<span class="icon-btn material-icons" onclick="abrirModalUploadGlobal()" title="Importar Diário">file_upload</span><span class="icon-btn material-icons" onclick="navTo('dashboard')" title="Dashboard">dashboard</span><span class="icon-btn material-icons" onclick="navTo('settings')" title="Configurações">settings</span>`;
             navTo('home');
         } else {
-            // Este envia o fechamento para o Kodular interceptar no webviewString!
             if (window.AppInventor) window.AppInventor.setWebViewString("FECHAR_APP");
         }
     }
@@ -342,6 +339,14 @@
         let modals = document.querySelectorAll('.modal-overlay'); let aberto = false;
         modals.forEach(m => { if (m.style.display === 'flex') { m.style.display = 'none'; aberto = true; } });
         if (!aberto) handleBackNavigation(); 
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById('tab-btn-' + tabId).classList.add('active');
+        document.getElementById('tab-content-' + tabId).classList.add('active');
+        if (tabId === 'history') renderHistoryTimeline();
     }
 
     // --- UX HELPERS ---
@@ -393,20 +398,17 @@
     function criarNovaTurma() {
         const nome = document.getElementById('add-turma-nome').value.trim(); const prof = document.getElementById('add-turma-prof').value.trim(); const wpp = document.getElementById('add-turma-wpp').value.replace(/\D/g, '');
         if(!nome || !prof) return customAlert("Nome da turma e professor são obrigatórios.");
-        
-        db.classes.push({ id: Date.now(), className: nome, profName: prof, wpp: wpp, status: 'none', useUniversal: true, customLimits: { banheiro: 2, agua: 2, externo: 1 }, maxOut: 1, students: [] });
+        db.classes.push({ id: Date.now(), className: nome, profName: prof, wpp: wpp, status: 'none', useUniversal: true, customLimits: { banheiro: 2, agua: 2, externo: 1 }, maxOut: 1, students: [], evolution: [] });
         save(); fecharModais(); renderHome(); toast("Turma criada!");
     }
 
     function deleteClass(id) {
         const cls = db.classes.find(c => c.id === id);
-        customConfirm(`Excluir a turma ${cls.className} e todos os seus alunos?`, () => {
-            db.classes = db.classes.filter(c => c.id !== id); save(); renderHome(); toast("Turma excluída");
-        }, "Atenção", true, "EXCLUIR");
+        customConfirm(`Excluir a turma ${cls.className} e todos os seus alunos e históricos?`, () => { db.classes = db.classes.filter(c => c.id !== id); save(); renderHome(); toast("Turma excluída"); }, "Atenção", true, "EXCLUIR");
     }
 
     // --- TELA DA TURMA (EDITION) ---
-    function abrirTurma(id) { currentClassId = id; navTo('class'); }
+    function abrirTurma(id) { currentClassId = id; navTo('class'); switchTab('config'); }
 
     function loadClassData(cls) {
         document.getElementById('class-name').value = cls.className || ''; document.getElementById('class-prof').value = cls.profName || '';
@@ -418,14 +420,9 @@
         document.getElementById('class-lim-banheiro').value = lims.banheiro || 0;
         document.getElementById('class-lim-agua').value = lims.agua || 0;
         document.getElementById('class-lim-externo').value = lims.externo || 0;
-        
         toggleCustomLimits();
 
-        // Parser inverso
-        let textRaw = "";
-        if(cls.students && cls.students.length > 0) {
-            textRaw = cls.students.map(s => s.bus ? `${s.name} - ${s.bus}` : s.name).join('\n');
-        }
+        let textRaw = ""; if(cls.students && cls.students.length > 0) textRaw = cls.students.map(s => s.bus ? `${s.name} - ${s.bus}` : s.name).join('\n');
         document.getElementById('class-students-raw').value = textRaw;
     }
 
@@ -435,13 +432,10 @@
     }
 
     function parseStudentsText(raw) {
-        let students = [];
-        let items = raw.split(/[,;\n]/);
+        let students = []; let items = raw.split(/[,;\n]/);
         items.forEach(item => {
             if(!item.trim()) return;
-            let parts = item.split('-');
-            let nome = parts[0].trim().toUpperCase();
-            let bus = parts[1] ? parts[1].trim().toUpperCase() : "";
+            let parts = item.split('-'); let nome = parts[0].trim().toUpperCase(); let bus = parts[1] ? parts[1].trim().toUpperCase() : "";
             if(nome) students.push({ name: nome, bus: bus });
         });
         return students;
@@ -449,36 +443,23 @@
 
     function salvarTurmaAtual() {
         const cls = db.classes.find(c => c.id === currentClassId);
-        cls.className = document.getElementById('class-name').value.trim();
-        cls.profName = document.getElementById('class-prof').value.trim();
-        cls.wpp = document.getElementById('class-wpp').value.replace(/\D/g, '');
-        cls.status = document.getElementById('class-status').value;
+        cls.className = document.getElementById('class-name').value.trim(); cls.profName = document.getElementById('class-prof').value.trim();
+        cls.wpp = document.getElementById('class-wpp').value.replace(/\D/g, ''); cls.status = document.getElementById('class-status').value;
         cls.useUniversal = document.getElementById('class-use-universal').checked;
         
         if(!cls.useUniversal) {
             cls.maxOut = parseInt(document.getElementById('class-max-out').value) || 1;
-            cls.customLimits = {
-                banheiro: parseInt(document.getElementById('class-lim-banheiro').value) || 0,
-                agua: parseInt(document.getElementById('class-lim-agua').value) || 0,
-                externo: parseInt(document.getElementById('class-lim-externo').value) || 0
-            };
+            cls.customLimits = { banheiro: parseInt(document.getElementById('class-lim-banheiro').value) || 0, agua: parseInt(document.getElementById('class-lim-agua').value) || 0, externo: parseInt(document.getElementById('class-lim-externo').value) || 0 };
         }
-        
         cls.students = parseStudentsText(document.getElementById('class-students-raw').value);
         save(); toast("Turma atualizada!");
     }
 
-    // --- GERAÇÃO DE JSON E WPP ---
+    // --- GERAÇÃO DE JSON PARA O SAIDALOGICA ---
     function buildClassJSON(cls) {
         let limits = cls.useUniversal ? db.config.universalLimits : cls.customLimits;
         let mxOut = cls.useUniversal ? db.config.maxOut : cls.maxOut;
-        
-        let jsonObj = {
-            metadata: { app: "SLGestao", turma: cls.className, prof: cls.profName, status: cls.status, pitch: db.config.pitchMsg },
-            max_out: mxOut,
-            limites: limits,
-            alunos: (cls.students || []).map(s => ({ nome: s.name, onibus: s.bus }))
-        };
+        let jsonObj = { metadata: { turma: cls.className }, max_out: mxOut, limites: limits, alunos: (cls.students || []).map(s => ({ nome: s.name, onibus: s.bus })) };
         return JSON.stringify(jsonObj);
     }
 
@@ -489,31 +470,153 @@
     }
 
     function exportarJsonTurma() {
-        salvarTurmaAtual(); 
-        const cls = db.classes.find(c => c.id === currentClassId);
+        salvarTurmaAtual(); const cls = db.classes.find(c => c.id === currentClassId);
         if(!cls.wpp) return customAlert("Cadastre o WhatsApp do professor acima primeiro.");
         sendWppString(cls.wpp, buildClassJSON(cls));
     }
 
     function enviarApresentacao() {
-        salvarTurmaAtual();
-        const cls = db.classes.find(c => c.id === currentClassId);
+        salvarTurmaAtual(); const cls = db.classes.find(c => c.id === currentClassId);
         if(!cls.wpp) return customAlert("Cadastre o WhatsApp do professor.");
-        
-        let msg = db.config.pitchMsg || "";
-        msg = msg.replace(/\[PROF\]/g, cls.profName).replace(/\[TURMA\]/g, cls.className);
-        
+        let msg = db.config.pitchMsg || ""; msg = msg.replace(/\[PROF\]/g, cls.profName).replace(/\[TURMA\]/g, cls.className);
         if(db.config.apkLink) msg += `\n\n📥 Link do App: ${db.config.apkLink}`;
-        
         sendWppString(cls.wpp, msg);
     }
 
     function sendWppString(phone, text) {
         let wppUrl = `whatsapp://send?phone=55${phone}&text=${encodeURIComponent(text)}`;
-        // Removido o prefixo WPP para evitar o erro 601 no Kodular. Envia o URL cru.
-        if (window.AppInventor) window.AppInventor.setWebViewString(wppUrl);
-        else window.location.href = wppUrl;
+        if (window.AppInventor) window.AppInventor.setWebViewString(wppUrl); else window.location.href = wppUrl;
         toast("Enviando...");
+    }
+
+    // --- LEITURA DO JSON DO PROFESSOR (HISTÓRICO EVOLUTIVO) ---
+    function anexarLogsNaTurma(jsonRaw, turmaId = null) {
+        try {
+            const data = JSON.parse(jsonRaw);
+            if (!data.logs || !Array.isArray(data.logs)) return customAlert("JSON inválido: O arquivo não contém a lista de 'logs'. Certifique-se de colar o export correto do SaídaLógica.");
+            
+            let cls;
+            if (turmaId) {
+                cls = db.classes.find(c => c.id === parseInt(turmaId));
+            } else {
+                // Modo global (header): Tenta adivinhar ou usa a atual se tiver ativa
+                if (currentClassId) cls = db.classes.find(c => c.id === currentClassId);
+                else return customAlert("Por favor, acesse uma turma ou selecione-a no importador para anexar o diário.");
+            }
+
+            if (!cls.evolution) cls.evolution = [];
+            
+            let diasNovos = 0;
+            data.logs.forEach(logDia => {
+                const jaExiste = cls.evolution.find(e => e.date === logDia.date || e.data === logDia.date || e.data === logDia.data);
+                if(!jaExiste) {
+                    cls.evolution.push(logDia); diasNovos++;
+                }
+            });
+
+            if(diasNovos > 0) {
+                save(); toast(`${diasNovos} novos dias arquivados na turma ${cls.className}!`);
+                if (currentClassId === cls.id && document.getElementById('tab-content-history').classList.contains('active')) {
+                    renderHistoryTimeline();
+                }
+            } else {
+                toast("Esses registros já estavam arquivados nesta turma.");
+            }
+            return true;
+        } catch (e) {
+            customAlert("Formato inválido. O texto colado não é um JSON reconhecido."); return false;
+        }
+    }
+
+    function processarDiarioTurma() {
+        const raw = document.getElementById('import-diario-class').value.trim();
+        if(!raw) return customAlert("Cole o código antes de processar.");
+        if (anexarLogsNaTurma(raw, currentClassId)) document.getElementById('import-diario-class').value = '';
+    }
+
+    function abrirModalUploadGlobal() {
+        document.getElementById('input-upload-global').value = '';
+        const sel = document.getElementById('select-turma-global');
+        sel.innerHTML = db.classes.map(c => `<option value="${c.id}">${c.className} (${c.profName})</option>`).join('');
+        document.getElementById('modal-upload-global').style.display = 'flex';
+    }
+
+    function processarUploadGlobal() {
+        const raw = document.getElementById('input-upload-global').value.trim();
+        const tId = document.getElementById('select-turma-global').value;
+        if(!raw) return customAlert("Cole o código antes de processar.");
+        if(anexarLogsNaTurma(raw, tId)) fecharModais();
+    }
+
+    // --- TIMELINE VISUAL E COPIAR TEXTO ---
+    function renderHistoryTimeline() {
+        const cls = db.classes.find(c => c.id === currentClassId);
+        const container = document.getElementById('history-timeline-container');
+        
+        if (!cls.evolution || cls.evolution.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#999; padding:20px;">Nenhum diário processado ainda.</p>`;
+            return;
+        }
+
+        // Ordena do mais recente pro mais antigo (Atenção: datas BR DD/MM/AAAA precisam de parse especial ou apenas confiar na ordem inserida. Usaremos reverse simplificado)
+        let evols = [...cls.evolution].reverse();
+        
+        container.innerHTML = evols.map(day => {
+            let dataLabel = day.date || day.data || 'Data Desconhecida';
+            let faltas = (day.absentes || day.faltas || []).map(f => `<div class="history-absent">• ${f}</div>`).join('');
+            
+            let ocorrencias = (day.records || []).map(r => {
+                let catName = r.categoryName || r.cat;
+                let stdName = r.studentName || r.aluno;
+                let count = r.count || r.n;
+                let isFuga = (r.limit || r.lim) === 0;
+                let classe = isFuga ? 'history-item fuga' : 'history-item';
+                let tag = isFuga ? 'SEM AUTORIZAÇÃO' : `(${count} vezes)`;
+                return `<div class="${classe}"><span>${stdName}</span> <span>${catName} ${tag}</span></div>`;
+            }).join('');
+
+            if(!faltas && !ocorrencias) return ''; // Dia vazio
+
+            return `
+            <div class="history-card">
+                <div class="history-date"><span class="material-icons" style="font-size:1rem; vertical-align:middle;">calendar_today</span> ${dataLabel}</div>
+                <div style="margin-bottom:10px;">
+                    ${faltas ? `<strong style="font-size:0.85rem; color:#666;">Faltas:</strong>${faltas}` : ''}
+                </div>
+                <div>
+                    ${ocorrencias ? `<strong style="font-size:0.85rem; color:#666;">Excessos/Ocorrências:</strong>${ocorrencias}` : '<span style="font-size:0.8rem; color:#888;">Nenhuma ocorrência neste dia.</span>'}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function copiarRelatorioText() {
+        const cls = db.classes.find(c => c.id === currentClassId);
+        if (!cls.evolution || cls.evolution.length === 0) return customAlert("Não há histórico para copiar.");
+        
+        let text = `*RELATÓRIO PROCEDURAL: ${cls.className}*\n*Professor(a):* ${cls.profName}\n\n`;
+        
+        cls.evolution.forEach(day => {
+            text += `*Data:* ${day.date || day.data}\n`;
+            let faltas = day.absentes || day.faltas || [];
+            if(faltas.length > 0) text += `Faltas: ${faltas.join(', ')}\n`;
+            
+            let recs = day.records || [];
+            if(recs.length > 0) {
+                text += `Ocorrências:\n`;
+                recs.forEach(r => {
+                    let isFuga = (r.limit || r.lim) === 0;
+                    text += `- ${r.studentName || r.aluno}: ${r.categoryName || r.cat} ${isFuga ? '(Sem Autorização)' : '('+(r.count || r.n)+' vzs)'}\n`;
+                });
+            } else {
+                text += `Sem ocorrências.\n`;
+            }
+            text += `\n`;
+        });
+
+        const area = document.getElementById('clipboard-area');
+        area.value = text; area.select(); document.execCommand('copy');
+        toast("Relatório copiado!");
     }
 
     // --- CONFIGURAÇÕES GLOBAIS ---
@@ -529,70 +632,29 @@
 
     function salvarConfiguracoesUniversais() {
         db.config.maxOut = parseInt(document.getElementById('univ-max-out').value) || 1;
-        db.config.universalLimits = {
-            banheiro: parseInt(document.getElementById('univ-lim-banheiro').value) || 0,
-            agua: parseInt(document.getElementById('univ-lim-agua').value) || 0,
-            externo: parseInt(document.getElementById('univ-lim-externo').value) || 0
-        };
-        db.config.pitchMsg = document.getElementById('config-pitch').value;
-        db.config.apkLink = document.getElementById('config-apk-link').value;
-        db.config.themeHex = document.getElementById('theme-color-picker').value;
-        
+        db.config.universalLimits = { banheiro: parseInt(document.getElementById('univ-lim-banheiro').value) || 0, agua: parseInt(document.getElementById('univ-lim-agua').value) || 0, externo: parseInt(document.getElementById('univ-lim-externo').value) || 0 };
+        db.config.pitchMsg = document.getElementById('config-pitch').value; db.config.apkLink = document.getElementById('config-apk-link').value; db.config.themeHex = document.getElementById('theme-color-picker').value;
         save(); aplicarTema(db.config.themeHex); toast("Configurações Globais salvas."); handleBackNavigation();
     }
 
-    function confirmarResetGeral() { customConfirm("Apagar TUDO (Turmas e Configurações)?", () => { localStorage.clear(); location.reload(); }, "Reset", true); }
+    function confirmarResetGeral() { customConfirm("Apagar TUDO (Turmas, Diários e Configurações)?", () => { localStorage.clear(); location.reload(); }, "Reset de Fábrica", true, "APAGAR"); }
 
     // --- DASHBOARD ---
     function renderDashboard() {
-        let stable = 0, unstable = 0, none = 0;
-        let htmlList = '';
-
+        let stable = 0, unstable = 0, none = 0; let htmlList = '';
         db.classes.forEach(cls => {
-            if(cls.status === 'stable') stable++;
-            else if(cls.status === 'unstable') unstable++;
-            else none++;
-
+            if(cls.status === 'stable') stable++; else if(cls.status === 'unstable') unstable++; else none++;
             const st = getStatusInfo(cls.status);
             htmlList += `
-            <div class="settings-card" style="padding:15px; margin-bottom:10px; border-left: 5px solid ${st.css === 'status-stable' ? 'var(--status-stable)' : (st.css==='status-unstable'?'var(--status-unstable)':'var(--status-none)')};">
+            <div class="settings-card" style="padding:15px; margin-bottom:10px; border-left: 5px solid ${st.css === 'status-stable' ? 'var(--status-stable)' : (st.css==='status-unstable'?'var(--status-unstable)':'var(--status-none)')}; cursor:pointer;" onclick="abrirTurma(${cls.id})">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div><strong>${cls.className}</strong> <span style="color:#666; font-size:0.8rem;">(${cls.profName})</span></div>
                     <span class="status-badge ${st.class}">${st.label}</span>
                 </div>
             </div>`;
         });
-
         document.getElementById('dash-st').innerText = stable; document.getElementById('dash-un').innerText = unstable; document.getElementById('dash-no').innerText = none;
         document.getElementById('dash-lists').innerHTML = htmlList || '<p style="text-align:center; color:#999; width:100%;">Sem dados.</p>';
-    }
-
-    // --- IMPORT JSON ---
-    function abrirModalImport() { document.getElementById('input-import').value = ''; document.getElementById('modal-import').style.display = 'flex'; }
-    
-    function processarImportacao() {
-        try {
-            const data = JSON.parse(document.getElementById('input-import').value.trim());
-            if(!data.metadata || !data.metadata.turma) return customAlert("JSON inválido: Faltam metadados da turma.");
-            
-            let existente = db.classes.find(c => c.className === data.metadata.turma);
-            if(existente) {
-                if(data.metadata.prof) existente.profName = data.metadata.prof;
-                if(data.metadata.status) existente.status = data.metadata.status;
-                if(data.alunos) existente.students = data.alunos.map(a => ({name: a.nome, bus: a.onibus}));
-                // Limites
-                if(data.limites) { existente.useUniversal = false; existente.customLimits = data.limites; }
-                if(data.max_out) existente.maxOut = data.max_out;
-            } else {
-                db.classes.push({
-                    id: Date.now(), className: data.metadata.turma, profName: data.metadata.prof || 'Desconhecido', wpp: '', status: data.metadata.status || 'none',
-                    useUniversal: !data.limites, customLimits: data.limites || { banheiro: 2, agua: 2, externo: 1 }, maxOut: data.max_out || 1,
-                    students: data.alunos ? data.alunos.map(a => ({name: a.nome, bus: a.onibus})) : []
-                });
-            }
-            save(); fecharModais(); toast("Sincronização concluída.");
-            if(document.querySelector('.screen.active').id === 'screen-home') renderHome();
-        } catch(e) { customAlert("Erro: Código JSON malformado."); }
     }
 
     init();
