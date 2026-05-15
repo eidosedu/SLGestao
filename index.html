@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" id="meta-theme-color" content="#FF9800">
+    <title>SLGestão</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #FF9800; --primary-dark: #F57C00; --primary-light: #FFE0B2;
+            --bg: #F4F6F8; --text: #333; --danger: #f44336; --success: #4CAF50; --card-bg: #ffffff;
+            --status-none: #9e9e9e; --status-stable: #4CAF50; --status-unstable: #f44336;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Roboto', sans-serif; margin: 0; background-color: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+
+        /* HEADER */
+        header { background: var(--primary); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 20; flex-shrink: 0; transition: background 0.3s; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-left h1 { margin: 0; font-size: 1.3rem; font-weight: bold; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px; }
+        .header-icons { display: flex; gap: 12px; align-items: center; }
+        .icon-btn { cursor: pointer; font-size: 1.6rem; padding: 6px; border-radius: 50%; transition: background 0.2s; display: flex; align-items: center; justify-content: center; color: white;}
+        .icon-btn:active { background: rgba(255,255,255,0.2); }
+
+        /* SCREENS */
+        .screen { flex: 1; overflow-y: auto; display: none; flex-direction: column; position: relative; padding: 15px; }
+        .screen.active { display: flex; animation: fadeIn 0.3s; }
+
+        /* RESPONSIVE GRID FOR CARDS */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 90px; }
+
+        /* CLASS CARDS */
+        .class-card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; overflow: hidden; transition: transform 0.1s; border-left: 6px solid var(--status-none); cursor: pointer; }
+        .class-card:active { transform: scale(0.98); }
+        .class-card.status-stable { border-left-color: var(--status-stable); }
+        .class-card.status-unstable { border-left-color: var(--status-unstable); }
+        
+        .class-card-content { padding: 15px; flex: 1; pointer-events: none; }
+        .class-title { font-size: 1.2rem; font-weight: 900; color: var(--primary-dark); margin-bottom: 5px; }
+        .class-prof { font-size: 0.9rem; color: #555; font-weight: bold; }
+        .class-meta { font-size: 0.75rem; color: #888; margin-top: 8px; display: flex; gap: 10px; }
+        
+        .class-actions { display: flex; border-top: 1px solid #eee; background: #fafafa; }
+        .card-action-btn { flex: 1; padding: 12px; border: none; background: transparent; color: #555; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; }
+        .card-action-btn:active { background: #eee; }
+        .card-action-btn.export { color: #607D8B; }
+        .card-action-btn.delete { color: var(--danger); border-left: 1px solid #eee; }
+
+        /* FAB */
+        .fab { position: fixed; bottom: 30px; right: 30px; background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: none; z-index: 30; transition: transform 0.2s; cursor: pointer; }
+        .fab:active { transform: scale(0.9); }
+
+        /* FORMS & SETTINGS */
+        .settings-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .settings-title { font-size: 1.1rem; color: var(--primary-dark); font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+        
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: bold; color: #666; margin-bottom: 5px; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1rem; outline: none; background: #fafafa; transition: 0.2s; font-family: inherit; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary); background: white; }
+        
+        .limit-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .limit-row label { font-size: 0.95rem; color: #333; font-weight: bold; display: flex; align-items: center; gap: 8px;}
+        .limit-row input { width: 70px; text-align: center; padding: 10px; font-size: 1.1rem; }
+
+        .btn-action { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 1rem; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; margin-top: 10px; cursor: pointer; }
+        .btn-action:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: white; color: var(--danger); border: 2px solid var(--danger); }
+
+        /* TOGGLE SWITCH */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; background: #fafafa; border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid #eee;}
+        .toggle-label { font-size: 0.95rem; color: #333; font-weight: bold; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* THEME SELECTOR */
+        .theme-selector { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: #fafafa; border-radius: 12px; border: 1px solid #eee; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; padding: 0; background: none; outline: none; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 3px solid #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .theme-info { display: flex; flex-direction: column; gap: 2px; }
+        .theme-info span { font-size: 0.95rem; font-weight: bold; color: #333; }
+        .theme-info small { font-size: 0.75rem; color: #777; }
+
+        /* BADGES */
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; color: white; }
+        .bg-none { background: var(--status-none); } .bg-stable { background: var(--status-stable); } .bg-unstable { background: var(--status-unstable); }
+
+        /* MODALS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(2px); }
+        .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { margin: 0; font-size: 1.3rem; color: var(--text); display: flex; align-items: center; gap: 8px;}
+        
+        #custom-dialog .modal-content { max-width: 320px; text-align: center; padding: 30px 20px; }
+        .dialog-buttons { display: flex; gap: 10px; justify-content: center; width: 100%; }
+        
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 200; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<header id="main-header">
+    <div class="header-left">
+        <span class="icon-btn material-icons" id="btn-back" style="display:none;" onclick="handleBackNavigation()">arrow_back</span>
+        <h1 id="header-title">SLGestão</h1>
+    </div>
+    <div class="header-icons" id="home-icons">
+        <span class="icon-btn material-icons" onclick="navTo('dashboard')" title="Dashboard">dashboard</span>
+        <span class="icon-btn material-icons" onclick="navTo('settings')" title="Configurações Universais">settings</span>
+    </div>
+</header>
+
+<div id="screen-home" class="screen active">
+    <div class="grid-container" id="classes-list"></div>
+    <button class="fab" onclick="abrirModalAddTurma()"><span class="material-icons">add</span></button>
+</div>
+
+<div id="screen-class" class="screen">
+    <div class="grid-container" style="padding-bottom: 20px;">
+        
+        <div class="settings-card">
+            <h3 class="settings-title"><span class="material-icons">school</span> Dados da Turma</h3>
+            <div class="input-group"><label>Nome da Turma</label><input type="text" id="class-name"></div>
+            <div class="input-group"><label>Professor(a) Responsável</label><input type="text" id="class-prof"></div>
+            <div class="input-group"><label>WhatsApp do Professor</label><input type="tel" id="class-wpp" placeholder="DDD + Número"></div>
+            
+            <div class="input-group">
+                <label>Status da Intervenção</label>
+                <select id="class-status">
+                    <option value="none">Não Recebeu (Aguardando)</option>
+                    <option value="stable">Estável (Fluindo Bem)</option>
+                    <option value="unstable">Instável (Reavaliar Setting)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <h3 class="settings-title"><span class="material-icons">tune</span> Regras da Turma</h3>
+            <div class="toggle-row">
+                <span class="toggle-label">Usar Configuração Universal</span>
+                <label class="switch"><input type="checkbox" id="class-use-universal" onchange="toggleCustomLimits()"><span class="slider"></span></label>
+            </div>
+            
+            <div id="custom-limits-container" style="display:none; padding-top:10px; border-top: 1px dashed #ccc;">
+                <div class="input-group"><label>Máx. Alunos Fora Simultaneamente</label><input type="number" id="class-max-out" min="1" max="10"></div>
+                <div class="limit-row"><label>Banheiro</label><input type="number" id="class-lim-banheiro" min="0"></div>
+                <div class="limit-row"><label>Água</label><input type="number" id="class-lim-agua" min="0"></div>
+                <div class="limit-row"><label>Externalidade</label><input type="number" id="class-lim-externo" min="0"></div>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <h3 class="settings-title"><span class="material-icons">groups</span> Alunos & Transporte</h3>
+            <p style="font-size:0.8rem; color:#666; margin-top:0;">Cole a lista. Formato: <code>Nome - Transporte</code> ou apenas <code>Nome</code>. Separe por vírgula ou quebra de linha.</p>
+            <div class="input-group"><textarea id="class-students-raw" placeholder="Ex: João - Van, Maria - 2, Pedro" style="height: 120px; resize:none;"></textarea></div>
+        </div>
+
+        <div class="settings-card" style="background: transparent; box-shadow: none; padding: 0;">
+            <button class="btn-action btn-success" onclick="salvarTurmaAtual()"><span class="material-icons">save</span> SALVAR ALTERAÇÕES</button>
+            <button class="btn-action" style="background:#2196F3;" onclick="enviarApresentacao()"><span class="material-icons">campaign</span> ENVIAR PITCH & APK (WPP)</button>
+            <button class="btn-action btn-json" style="background:#607D8B;" onclick="exportarJsonTurma()"><span class="material-icons">data_object</span> EXPORTAR SETTING (JSON)</button>
+        </div>
+
+    </div>
+</div>
+
+<div id="screen-settings" class="screen">
+    <div class="grid-container" style="padding-bottom: 20px;">
+        
+        <div class="settings-card">
+            <h3 class="settings-title"><span class="material-icons">palette</span> Identidade Visual</h3>
+            <div class="theme-selector">
+                <input type="color" id="theme-color-picker" value="#FF9800" oninput="aplicarTema(this.value)">
+                <div class="theme-info">
+                    <span>Cor Base do Sistema</span>
+                    <small>Aplica-se imediatamente a todo o App.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <h3 class="settings-title"><span class="material-icons">public</span> Regras Universais (Padrão)</h3>
+            <div class="input-group"><label>Máx. Alunos Fora (Padrão)</label><input type="number" id="univ-max-out" min="1"></div>
+            <div class="limit-row"><label>Banheiro</label><input type="number" id="univ-lim-banheiro" min="0"></div>
+            <div class="limit-row"><label>Água</label><input type="number" id="univ-lim-agua" min="0"></div>
+            <div class="limit-row"><label>Externalidade</label><input type="number" id="univ-lim-externo" min="0"></div>
+        </div>
+
+        <div class="settings-card">
+            <h3 class="settings-title"><span class="material-icons">mark_email_read</span> Mensagem de Apresentação (Pitch)</h3>
+            <p style="font-size:0.8rem; color:#666; margin-top:0;">Use <b>[PROF]</b> e <b>[TURMA]</b> para o sistema preencher sozinho na hora de enviar.</p>
+            <div class="input-group">
+                <textarea id="config-pitch" style="height: 120px; resize:none;" placeholder="Olá [PROF], segue o app da turma [TURMA]..."></textarea>
+            </div>
+            <div class="input-group">
+                <label>Link para Download do APK (Drive, MediaFire, etc)</label>
+                <input type="url" id="config-apk-link" placeholder="https://...">
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <button class="btn-action btn-success" onclick="salvarConfiguracoesUniversais()">SALVAR CONFIGURAÇÕES</button>
+            <button class="btn-action btn-danger" style="margin-top: 20px; background: transparent; color: var(--danger); border: 1px solid var(--danger);" onclick="confirmarResetGeral()">RESET DE FÁBRICA</button>
+        </div>
+    </div>
+</div>
+
+<div id="screen-dashboard" class="screen">
+    <div class="settings-card">
+        <h3 class="settings-title"><span class="material-icons">monitoring</span> Visão Geral da Escola</h3>
+        <div id="dash-stats" style="display:flex; justify-content:space-around; text-align:center; margin-bottom:20px; font-weight:bold;">
+            <div><div style="font-size:2rem; color:var(--status-stable);" id="dash-st">0</div>Estáveis</div>
+            <div><div style="font-size:2rem; color:var(--status-unstable);" id="dash-un">0</div>Instáveis</div>
+            <div><div style="font-size:2rem; color:var(--status-none);" id="dash-no">0</div>Aguardando</div>
+        </div>
+    </div>
+    <div id="dash-lists" class="grid-container">
+        </div>
+</div>
+
+<div id="modal-add-turma" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Nova Turma</h2><span class="icon-btn material-icons" onclick="fecharModais()">close</span></div>
+        <div class="input-group"><label>Nome da Turma</label><input type="text" id="add-turma-nome" placeholder="Ex: 3º Ano A"></div>
+        <div class="input-group"><label>Professor Responsável</label><input type="text" id="add-turma-prof" placeholder="Ex: Ueslei"></div>
+        <div class="input-group"><label>WhatsApp do Professor</label><input type="tel" id="add-turma-wpp" placeholder="Ex: 79999999999"></div>
+        <button class="btn-action" onclick="criarNovaTurma()">CADASTRAR</button>
+    </div>
+</div>
+
+<div id="modal-import" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header"><h2><span class="material-icons">download</span> Importar Dados</h2><span class="icon-btn material-icons" onclick="fecharModais()">close</span></div>
+        <p style="font-size:0.85rem; color:#666; margin-top:-10px;">Cole o JSON gerado em outro dispositivo para importar turmas e configurações.</p>
+        <div class="input-group"><textarea id="input-import" style="height:150px; font-family:monospace; font-size:0.8rem;" placeholder='{"limites": {...}, "alunos": [...]}'></textarea></div>
+        
+        <div style="display:flex; gap:10px; margin-top: 20px;">
+            <button class="btn-action btn-danger" style="flex:1; margin:0; background:transparent; color:var(--danger); border:2px solid var(--danger);" onclick="fecharModais()">CANCELAR</button>
+            <button class="btn-action btn-success" style="flex:2; margin:0;" onclick="processarImportacao()">SINCRONIZAR</button>
+        </div>
+    </div>
+</div>
+
+<div id="custom-dialog" class="modal-overlay" style="z-index: 300;">
+    <div class="modal-content"><span class="material-icons" id="dialog-icon" style="font-size: 3rem; color: var(--primary); margin-bottom: 10px; display:block; text-align:center;">info</span><h3 id="dialog-title" style="margin: 0 0 10px 0; text-align:center;">Aviso</h3><p id="dialog-message" style="color: #666; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; text-align:center;"></p>
+    <div class="dialog-buttons"><button id="dialog-btn-cancel" class="btn-action btn-danger" style="margin:0; flex:1; display:none;" onclick="fecharDialogo()">CANCELAR</button><button id="dialog-btn-confirm" class="btn-action" style="margin:0; flex:1;">OK</button></div></div>
+</div>
+
+<div id="toast">Mensagem</div>
+
+<script>
+    // --- ESTADO INICIAL E VACINA (FALLBACKS) ---
+    const DEFAULT_CONFIG = {
+        themeHex: '#FF9800',
+        universalLimits: { banheiro: 2, agua: 2, externo: 1 },
+        maxOut: 1,
+        pitchMsg: "Olá [PROF], tudo bem?\n\nSegue o link do aplicativo Saída Lógica configurado exclusivamente para a turma [TURMA].\n\nQualquer dúvida, estou à disposição!",
+        apkLink: "https://"
+    };
+
+    let db;
+    try {
+        db = JSON.parse(localStorage.getItem('slgestao_db'));
+    } catch(e) {
+        db = null;
+    }
+    
+    // Normalização completa de Dados
+    if (!db) db = { classes: [], config: DEFAULT_CONFIG };
+    if (!db.classes) db.classes = [];
+    if (!db.config) db.config = {};
+    db.config = { ...DEFAULT_CONFIG, ...db.config };
+    if (!db.config.universalLimits) db.config.universalLimits = DEFAULT_CONFIG.universalLimits;
+
+    let currentClassId = null;
+    let dialogCallback = null;
+
+    // --- INIT & THEME ---
+    function escurecerCor(hex, lum) {
+        hex = String(hex).replace(/[^0-9a-f]/gi, ''); if (hex.length < 6) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        let rgb = "#", c, i; for (i = 0; i < 3; i++) { c = parseInt(hex.substr(i*2,2), 16); c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16); rgb += ("00"+c).substr(c.length); }
+        return rgb;
+    }
+    function aplicarTema(hex) {
+        if(!hex) hex = '#FF9800'; // Fallback de cor
+        const root = document.documentElement; 
+        root.style.setProperty('--primary', hex); 
+        root.style.setProperty('--primary-dark', escurecerCor(hex, -0.2)); 
+        root.style.setProperty('--primary-light', hex + '26'); 
+        const metaTheme = document.getElementById('meta-theme-color');
+        if (metaTheme) metaTheme.setAttribute('content', hex);
+    }
+
+    function init() {
+        aplicarTema(db.config.themeHex);
+        renderHome();
+    }
+    
+    function save() { localStorage.setItem('slgestao_db', JSON.stringify(db)); }
+
+    // --- NAVIGATION ---
+    function navTo(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const title = document.getElementById('header-title'), btnBack = document.getElementById('btn-back'), homeIcons = document.getElementById('home-icons');
+        document.getElementById('screen-' + screenId).classList.add('active');
+
+        if(screenId === 'home') {
+            title.innerText = `SLGestão`; btnBack.style.display = 'none'; homeIcons.style.display = 'flex'; currentClassId = null; renderHome();
+        } else if (screenId === 'class') {
+            const cls = db.classes.find(c => c.id === currentClassId);
+            title.innerText = `Turma: ${cls.className}`; btnBack.style.display = 'flex'; homeIcons.style.display = 'none'; loadClassData(cls);
+        } else if (screenId === 'settings') {
+            title.innerText = "Configurações Globais"; btnBack.style.display = 'flex'; homeIcons.style.display = 'flex'; homeIcons.innerHTML = `<span class="icon-btn material-icons" onclick="abrirModalImport()" title="Importar JSON">download</span>`; loadUniversalSettings();
+        } else if (screenId === 'dashboard') {
+            title.innerText = "Dashboard (Visão Macro)"; btnBack.style.display = 'flex'; homeIcons.style.display = 'none'; renderDashboard();
+        }
+    }
+
+    function handleBackNavigation() {
+        const activeScreen = document.querySelector('.screen.active').id;
+        if (activeScreen !== 'screen-home') {
+            document.getElementById('home-icons').innerHTML = `<span class="icon-btn material-icons" onclick="navTo('dashboard')" title="Dashboard">dashboard</span><span class="icon-btn material-icons" onclick="navTo('settings')" title="Configurações">settings</span>`;
+            navTo('home');
+        } else {
+            // Este envia o fechamento para o Kodular interceptar no webviewString!
+            if (window.AppInventor) window.AppInventor.setWebViewString("FECHAR_APP");
+        }
+    }
+
+    function handleAndroidBack() {
+        let modals = document.querySelectorAll('.modal-overlay'); let aberto = false;
+        modals.forEach(m => { if (m.style.display === 'flex') { m.style.display = 'none'; aberto = true; } });
+        if (!aberto) handleBackNavigation(); 
+    }
+
+    // --- UX HELPERS ---
+    function toast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.className = "show"; setTimeout(() => t.className = "", 3000); }
+    function fecharModais() { document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'custom-dialog') m.style.display = 'none'; }); }
+    function customAlert(msg, title = "Aviso") { document.getElementById('dialog-title').innerText = title; document.getElementById('dialog-message').innerText = msg; document.getElementById('dialog-btn-cancel').style.display = 'none'; document.getElementById('dialog-btn-confirm').onclick = fecharDialogo; document.getElementById('custom-dialog').style.display = 'flex'; }
+    function customConfirm(msg, onConfirm, title = "Atenção", isDanger = false, confirmText = "CONFIRMAR") { document.getElementById('dialog-title').innerText = title; document.getElementById('dialog-message').innerText = msg; document.getElementById('dialog-btn-cancel').style.display = 'flex'; const btnOk = document.getElementById('dialog-btn-confirm'); btnOk.innerText = confirmText; btnOk.className = isDanger ? "btn-action btn-danger" : "btn-action"; dialogCallback = onConfirm; btnOk.onclick = () => { if(dialogCallback) dialogCallback(); fecharDialogo(); }; document.getElementById('custom-dialog').style.display = 'flex'; }
+    function fecharDialogo() { document.getElementById('custom-dialog').style.display = 'none'; dialogCallback = null; }
+
+    function getStatusInfo(status) {
+        if(status === 'stable') return { label: 'Estável', class: 'bg-stable', css: 'status-stable' };
+        if(status === 'unstable') return { label: 'Reavaliar', class: 'bg-unstable', css: 'status-unstable' };
+        return { label: 'Aguardando', class: 'bg-none', css: '' };
+    }
+
+    // --- HOME & CRUD TURMAS ---
+    function renderHome() {
+        const container = document.getElementById('classes-list');
+        if(!db.classes || db.classes.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding: 40px; color: #999; grid-column: 1 / -1;">Nenhuma turma cadastrada. Clique em + para começar.</div>`;
+            return;
+        }
+        
+        container.innerHTML = db.classes.sort((a,b) => (a.className || '').localeCompare(b.className || '')).map(cls => {
+            const st = getStatusInfo(cls.status);
+            return `
+            <div class="class-card ${st.css}" onclick="abrirTurma(${cls.id})">
+                <div class="class-card-content">
+                    <div class="class-title">${cls.className}</div>
+                    <div class="class-prof">Prof: ${cls.profName}</div>
+                    <div class="class-meta">
+                        <span class="status-badge ${st.class}">${st.label}</span>
+                        <span>${cls.students ? cls.students.length : 0} alunos</span>
+                    </div>
+                </div>
+                <div class="class-actions">
+                    <button class="card-action-btn export" onclick="event.stopPropagation(); fastExportJson(${cls.id})"><span class="material-icons">data_object</span> JSON</button>
+                    <button class="card-action-btn delete" onclick="event.stopPropagation(); deleteClass(${cls.id})"><span class="material-icons">delete</span></button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function abrirModalAddTurma() {
+        document.getElementById('add-turma-nome').value = ''; document.getElementById('add-turma-prof').value = ''; document.getElementById('add-turma-wpp').value = '';
+        document.getElementById('modal-add-turma').style.display = 'flex';
+    }
+
+    function criarNovaTurma() {
+        const nome = document.getElementById('add-turma-nome').value.trim(); const prof = document.getElementById('add-turma-prof').value.trim(); const wpp = document.getElementById('add-turma-wpp').value.replace(/\D/g, '');
+        if(!nome || !prof) return customAlert("Nome da turma e professor são obrigatórios.");
+        
+        db.classes.push({ id: Date.now(), className: nome, profName: prof, wpp: wpp, status: 'none', useUniversal: true, customLimits: { banheiro: 2, agua: 2, externo: 1 }, maxOut: 1, students: [] });
+        save(); fecharModais(); renderHome(); toast("Turma criada!");
+    }
+
+    function deleteClass(id) {
+        const cls = db.classes.find(c => c.id === id);
+        customConfirm(`Excluir a turma ${cls.className} e todos os seus alunos?`, () => {
+            db.classes = db.classes.filter(c => c.id !== id); save(); renderHome(); toast("Turma excluída");
+        }, "Atenção", true, "EXCLUIR");
+    }
+
+    // --- TELA DA TURMA (EDITION) ---
+    function abrirTurma(id) { currentClassId = id; navTo('class'); }
+
+    function loadClassData(cls) {
+        document.getElementById('class-name').value = cls.className || ''; document.getElementById('class-prof').value = cls.profName || '';
+        document.getElementById('class-wpp').value = cls.wpp || ''; document.getElementById('class-status').value = cls.status || 'none';
+        document.getElementById('class-use-universal').checked = cls.useUniversal;
+        
+        const lims = cls.customLimits || db.config.universalLimits || { banheiro: 2, agua: 2, externo: 1 };
+        document.getElementById('class-max-out').value = cls.maxOut || db.config.maxOut || 1;
+        document.getElementById('class-lim-banheiro').value = lims.banheiro || 0;
+        document.getElementById('class-lim-agua').value = lims.agua || 0;
+        document.getElementById('class-lim-externo').value = lims.externo || 0;
+        
+        toggleCustomLimits();
+
+        // Parser inverso
+        let textRaw = "";
+        if(cls.students && cls.students.length > 0) {
+            textRaw = cls.students.map(s => s.bus ? `${s.name} - ${s.bus}` : s.name).join('\n');
+        }
+        document.getElementById('class-students-raw').value = textRaw;
+    }
+
+    function toggleCustomLimits() {
+        const useUniv = document.getElementById('class-use-universal').checked;
+        document.getElementById('custom-limits-container').style.display = useUniv ? 'none' : 'block';
+    }
+
+    function parseStudentsText(raw) {
+        let students = [];
+        let items = raw.split(/[,;\n]/);
+        items.forEach(item => {
+            if(!item.trim()) return;
+            let parts = item.split('-');
+            let nome = parts[0].trim().toUpperCase();
+            let bus = parts[1] ? parts[1].trim().toUpperCase() : "";
+            if(nome) students.push({ name: nome, bus: bus });
+        });
+        return students;
+    }
+
+    function salvarTurmaAtual() {
+        const cls = db.classes.find(c => c.id === currentClassId);
+        cls.className = document.getElementById('class-name').value.trim();
+        cls.profName = document.getElementById('class-prof').value.trim();
+        cls.wpp = document.getElementById('class-wpp').value.replace(/\D/g, '');
+        cls.status = document.getElementById('class-status').value;
+        cls.useUniversal = document.getElementById('class-use-universal').checked;
+        
+        if(!cls.useUniversal) {
+            cls.maxOut = parseInt(document.getElementById('class-max-out').value) || 1;
+            cls.customLimits = {
+                banheiro: parseInt(document.getElementById('class-lim-banheiro').value) || 0,
+                agua: parseInt(document.getElementById('class-lim-agua').value) || 0,
+                externo: parseInt(document.getElementById('class-lim-externo').value) || 0
+            };
+        }
+        
+        cls.students = parseStudentsText(document.getElementById('class-students-raw').value);
+        save(); toast("Turma atualizada!");
+    }
+
+    // --- GERAÇÃO DE JSON E WPP ---
+    function buildClassJSON(cls) {
+        let limits = cls.useUniversal ? db.config.universalLimits : cls.customLimits;
+        let mxOut = cls.useUniversal ? db.config.maxOut : cls.maxOut;
+        
+        let jsonObj = {
+            metadata: { app: "SLGestao", turma: cls.className, prof: cls.profName, status: cls.status, pitch: db.config.pitchMsg },
+            max_out: mxOut,
+            limites: limits,
+            alunos: (cls.students || []).map(s => ({ nome: s.name, onibus: s.bus }))
+        };
+        return JSON.stringify(jsonObj);
+    }
+
+    function fastExportJson(id) {
+        const cls = db.classes.find(c => c.id === id);
+        if(!cls.wpp) return customAlert("Esta turma não tem WhatsApp cadastrado. Edite a turma primeiro.");
+        sendWppString(cls.wpp, buildClassJSON(cls));
+    }
+
+    function exportarJsonTurma() {
+        salvarTurmaAtual(); 
+        const cls = db.classes.find(c => c.id === currentClassId);
+        if(!cls.wpp) return customAlert("Cadastre o WhatsApp do professor acima primeiro.");
+        sendWppString(cls.wpp, buildClassJSON(cls));
+    }
+
+    function enviarApresentacao() {
+        salvarTurmaAtual();
+        const cls = db.classes.find(c => c.id === currentClassId);
+        if(!cls.wpp) return customAlert("Cadastre o WhatsApp do professor.");
+        
+        let msg = db.config.pitchMsg || "";
+        msg = msg.replace(/\[PROF\]/g, cls.profName).replace(/\[TURMA\]/g, cls.className);
+        
+        if(db.config.apkLink) msg += `\n\n📥 Link do App: ${db.config.apkLink}`;
+        
+        sendWppString(cls.wpp, msg);
+    }
+
+    function sendWppString(phone, text) {
+        let wppUrl = `whatsapp://send?phone=55${phone}&text=${encodeURIComponent(text)}`;
+        // Removido o prefixo WPP para evitar o erro 601 no Kodular. Envia o URL cru.
+        if (window.AppInventor) window.AppInventor.setWebViewString(wppUrl);
+        else window.location.href = wppUrl;
+        toast("Enviando...");
+    }
+
+    // --- CONFIGURAÇÕES GLOBAIS ---
+    function loadUniversalSettings() {
+        document.getElementById('univ-max-out').value = db.config.maxOut;
+        document.getElementById('univ-lim-banheiro').value = db.config.universalLimits.banheiro;
+        document.getElementById('univ-lim-agua').value = db.config.universalLimits.agua;
+        document.getElementById('univ-lim-externo').value = db.config.universalLimits.externo;
+        document.getElementById('config-pitch').value = db.config.pitchMsg;
+        document.getElementById('config-apk-link').value = db.config.apkLink;
+        document.getElementById('theme-color-picker').value = db.config.themeHex || '#FF9800';
+    }
+
+    function salvarConfiguracoesUniversais() {
+        db.config.maxOut = parseInt(document.getElementById('univ-max-out').value) || 1;
+        db.config.universalLimits = {
+            banheiro: parseInt(document.getElementById('univ-lim-banheiro').value) || 0,
+            agua: parseInt(document.getElementById('univ-lim-agua').value) || 0,
+            externo: parseInt(document.getElementById('univ-lim-externo').value) || 0
+        };
+        db.config.pitchMsg = document.getElementById('config-pitch').value;
+        db.config.apkLink = document.getElementById('config-apk-link').value;
+        db.config.themeHex = document.getElementById('theme-color-picker').value;
+        
+        save(); aplicarTema(db.config.themeHex); toast("Configurações Globais salvas."); handleBackNavigation();
+    }
+
+    function confirmarResetGeral() { customConfirm("Apagar TUDO (Turmas e Configurações)?", () => { localStorage.clear(); location.reload(); }, "Reset", true); }
+
+    // --- DASHBOARD ---
+    function renderDashboard() {
+        let stable = 0, unstable = 0, none = 0;
+        let htmlList = '';
+
+        db.classes.forEach(cls => {
+            if(cls.status === 'stable') stable++;
+            else if(cls.status === 'unstable') unstable++;
+            else none++;
+
+            const st = getStatusInfo(cls.status);
+            htmlList += `
+            <div class="settings-card" style="padding:15px; margin-bottom:10px; border-left: 5px solid ${st.css === 'status-stable' ? 'var(--status-stable)' : (st.css==='status-unstable'?'var(--status-unstable)':'var(--status-none)')};">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><strong>${cls.className}</strong> <span style="color:#666; font-size:0.8rem;">(${cls.profName})</span></div>
+                    <span class="status-badge ${st.class}">${st.label}</span>
+                </div>
+            </div>`;
+        });
+
+        document.getElementById('dash-st').innerText = stable; document.getElementById('dash-un').innerText = unstable; document.getElementById('dash-no').innerText = none;
+        document.getElementById('dash-lists').innerHTML = htmlList || '<p style="text-align:center; color:#999; width:100%;">Sem dados.</p>';
+    }
+
+    // --- IMPORT JSON ---
+    function abrirModalImport() { document.getElementById('input-import').value = ''; document.getElementById('modal-import').style.display = 'flex'; }
+    
+    function processarImportacao() {
+        try {
+            const data = JSON.parse(document.getElementById('input-import').value.trim());
+            if(!data.metadata || !data.metadata.turma) return customAlert("JSON inválido: Faltam metadados da turma.");
+            
+            let existente = db.classes.find(c => c.className === data.metadata.turma);
+            if(existente) {
+                if(data.metadata.prof) existente.profName = data.metadata.prof;
+                if(data.metadata.status) existente.status = data.metadata.status;
+                if(data.alunos) existente.students = data.alunos.map(a => ({name: a.nome, bus: a.onibus}));
+                // Limites
+                if(data.limites) { existente.useUniversal = false; existente.customLimits = data.limites; }
+                if(data.max_out) existente.maxOut = data.max_out;
+            } else {
+                db.classes.push({
+                    id: Date.now(), className: data.metadata.turma, profName: data.metadata.prof || 'Desconhecido', wpp: '', status: data.metadata.status || 'none',
+                    useUniversal: !data.limites, customLimits: data.limites || { banheiro: 2, agua: 2, externo: 1 }, maxOut: data.max_out || 1,
+                    students: data.alunos ? data.alunos.map(a => ({name: a.nome, bus: a.onibus})) : []
+                });
+            }
+            save(); fecharModais(); toast("Sincronização concluída.");
+            if(document.querySelector('.screen.active').id === 'screen-home') renderHome();
+        } catch(e) { customAlert("Erro: Código JSON malformado."); }
+    }
+
+    init();
+</script>
+</body>
+</html>
