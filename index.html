@@ -97,8 +97,8 @@
         .history-item.fuga { color: var(--danger); font-weight: bold; }
         .history-absent { color: #888; font-style: italic; font-size: 0.85rem; padding: 5px 0; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(2px); }
-        .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(2px); cursor: pointer; }
+        .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; cursor: default; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h2 { margin: 0; font-size: 1.3rem; color: var(--text); display: flex; align-items: center; gap: 8px;}
         
@@ -235,17 +235,21 @@
     <div id="dash-lists" class="grid-container"></div>
 </div>
 
-<div id="modal-add-turma" class="modal-overlay">
+<div id="modal-add-turma" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
     <div class="modal-content">
         <div class="modal-header"><h2>Nova Turma</h2><span class="icon-btn material-icons" onclick="fecharModais()">close</span></div>
         <div class="input-group"><label>Nome da Turma</label><input type="text" id="add-turma-nome" placeholder="Ex: 3º Ano A"></div>
         <div class="input-group"><label>Professor Responsável</label><input type="text" id="add-turma-prof" placeholder="Ex: Ueslei"></div>
         <div class="input-group"><label>WhatsApp do Professor</label><input type="tel" id="add-turma-wpp" placeholder="Ex: 79999999999"></div>
-        <button class="btn-action" onclick="criarNovaTurma()">CADASTRAR</button>
+        
+        <div style="display:flex; gap:10px; margin-top: 20px;">
+            <button class="btn-action btn-danger" style="flex:1; margin:0; background:transparent; color:var(--danger); border:2px solid var(--danger);" onclick="fecharModais()">CANCELAR</button>
+            <button class="btn-action" style="flex:2; margin:0;" onclick="criarNovaTurma()">CADASTRAR</button>
+        </div>
     </div>
 </div>
 
-<div id="modal-upload-global" class="modal-overlay">
+<div id="modal-upload-global" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
     <div class="modal-content">
         <div class="modal-header"><h2><span class="material-icons" style="color:var(--primary);">file_upload</span> Anexar Diário</h2><span class="icon-btn material-icons" onclick="fecharModais()">close</span></div>
         <p style="font-size:0.85rem; color:#666; margin-top:-10px;">Cole o JSON do professor. O sistema arquivará na turma correta automaticamente, cruzando pelo nome da sala.</p>
@@ -254,7 +258,11 @@
             <select id="select-turma-global">
                 </select>
         </div>
-        <button class="btn-action btn-success" onclick="processarUploadGlobal()">ANEXAR E ARQUIVAR</button>
+        
+        <div style="display:flex; gap:10px; margin-top: 20px;">
+            <button class="btn-action btn-danger" style="flex:1; margin:0; background:transparent; color:var(--danger); border:2px solid var(--danger);" onclick="fecharModais()">CANCELAR</button>
+            <button class="btn-action btn-success" style="flex:2; margin:0;" onclick="processarUploadGlobal()">ARQUIVAR</button>
+        </div>
     </div>
 </div>
 
@@ -267,6 +275,11 @@
 <textarea id="clipboard-area" style="position: absolute; left: -9999px;"></textarea>
 
 <script>
+    // --- ESCUTADOR DO TECLADO (PC) ---
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") fecharModais();
+    });
+
     // --- ESTADO INICIAL ---
     const DEFAULT_CONFIG = {
         themeHex: '#FF9800',
@@ -499,7 +512,6 @@
             if (turmaId) {
                 cls = db.classes.find(c => c.id === parseInt(turmaId));
             } else {
-                // Modo global (header): Tenta adivinhar ou usa a atual se tiver ativa
                 if (currentClassId) cls = db.classes.find(c => c.id === currentClassId);
                 else return customAlert("Por favor, acesse uma turma ou selecione-a no importador para anexar o diário.");
             }
@@ -558,7 +570,6 @@
             return;
         }
 
-        // Ordena do mais recente pro mais antigo (Atenção: datas BR DD/MM/AAAA precisam de parse especial ou apenas confiar na ordem inserida. Usaremos reverse simplificado)
         let evols = [...cls.evolution].reverse();
         
         container.innerHTML = evols.map(day => {
@@ -575,7 +586,7 @@
                 return `<div class="${classe}"><span>${stdName}</span> <span>${catName} ${tag}</span></div>`;
             }).join('');
 
-            if(!faltas && !ocorrencias) return ''; // Dia vazio
+            if(!faltas && !ocorrencias) return ''; 
 
             return `
             <div class="history-card">
