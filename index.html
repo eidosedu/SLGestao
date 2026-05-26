@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Laboratório de Óptica</title>
+    <style>
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121214; color: #e1e1e6; overflow: hidden; height: 100vh; width: 100vw;
+        }
+
+        .view { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; padding-top: 60px; }
+        .view.active { display: block; }
+
+        .top-bar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background-color: #1a1a1e; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); z-index: 100;
+        }
+
+        .top-bar h1 { font-size: 18px; font-weight: 600; color: #ffffff; text-align: center; flex-grow: 1; }
+        .nav-btn {
+            background: none; border: none; cursor: pointer; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s;
+        }
+        .nav-btn:active { background-color: #29292e; }
+        .nav-btn svg { width: 24px; height: 24px; fill: #a8a8b3; }
+        .nav-btn.hidden { visibility: hidden; }
+
+        .menu-container { padding: 16px; height: 100%; overflow-y: auto; }
+        .menu-grid { display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
+        .menu-card {
+            background-color: #1a1a1e; border: 1px solid #29292e; border-radius: 12px;
+            padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer;
+        }
+        .menu-card:active { transform: scale(0.98); border-color: #41414c; }
+
+        .card-icon { width: 48px; height: 48px; background-color: #29292e; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .card-icon svg { width: 28px; height: 28px; }
+        .card-info h2 { font-size: 15px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
+        .card-info p { font-size: 12px; color: #8d8d99; line-height: 1.4; }
+
+        .lab-container { display: flex; flex-direction: column; height: 100%; padding: 12px; }
+        .canvas-area { flex-grow: 1; background-color: #09090a; border-radius: 12px; border: 1px solid #202024; position: relative; overflow: hidden; min-height: 240px; }
+        .control-panel { background-color: #1a1a1e; border: 1px solid #29292e; border-radius: 12px; padding: 14px; margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+        .control-title { font-size: 13px; color: #8d8d99; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.75); z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background-color: #1a1a1e; border: 1px solid #29292e; border-radius: 16px;
+            width: 100%; max-width: 400px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); position: relative;
+        }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .modal-title { font-size: 16px; font-weight: 600; color: #ffffff; }
+        .modal-close { background: none; border: none; cursor: pointer; padding: 4px; }
+        .modal-close svg { width: 20px; height: 20px; fill: #8d8d99; }
+        .modal-body { font-size: 14px; color: #c4c4cc; line-height: 1.5; }
+        .modal-body p { margin-bottom: 10px; }
+
+        .slider-wrapper { display: flex; align-items: center; gap: 12px; }
+        .range-input { flex-grow: 1; -webkit-appearance: none; background: #29292e; height: 8px; border-radius: 4px; outline: none; }
+        .range-input::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; cursor: pointer; }
+
+        /* Grade do Labirinto */
+        .grid-container { display: grid; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        .grid-cell { border: 1px dashed #1f1f23; display: flex; align-items: center; justify-content: center; position: relative; }
+        .cell-element { width: 75%; height: 75%; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
+        .mirror-element { cursor: pointer; border: 2px solid #41414c; background-color: rgba(255,255,255,0.05); border-radius: 4px; position: relative; }
+        .mirror-line { width: 100%; height: 4px; background-color: #4da6ff; box-shadow: 0 0 8px #4da6ff; transform: rotate(0deg); }
+        .mirror-element.deg45 .mirror-line { transform: rotate(45deg); }
+        .mirror-element.deg135 .mirror-line { transform: rotate(135deg); }
+        .mirror-element.deg0 .mirror-line { display: none; }
+        .emitter-icon svg { fill: #ff3333; width: 28px; height: 28px; }
+        .target-icon svg { fill: #ffcc00; width: 28px; height: 28px; }
+        #reflection-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+
+        .filter-bench { display: flex; justify-content: space-around; align-items: center; height: 100%; padding: 0 20px; }
+        .filter-slot { width: 60px; height: 120px; border: 2px dashed #29292e; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background-color: rgba(0,0,0,0.3); }
+        .filter-slot.active-r { border-color: #ff3333; background-color: rgba(255, 51, 51, 0.15); }
+        .filter-slot.active-g { border-color: #33ff33; background-color: rgba(51, 255, 51, 0.15); }
+        .filter-slot.active-b { border-color: #3333ff; background-color: rgba(51, 51, 255, 0.15); }
+        .filter-tag { font-size: 11px; font-weight: bold; color: #8d8d99; margin-top: 8px; }
+
+        .room-display { display: flex; justify-content: space-around; align-items: center; height: 100%; padding: 20px; transition: background-color 0.3s; }
+        .room-object { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .room-object svg { width: 64px; height: 64px; transition: filter 0.3s, fill 0.3s; }
+        .object-caption { font-size: 12px; color: #c4c4cc; font-weight: 500; }
+        .btn-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .toggle-btn { background-color: #29292e; border: 1px solid #41414c; color: #e1e1e6; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .toggle-btn.active { background-color: #ffffff; color: #121214; border-color: #ffffff; }
+
+        .blend-view { width: 100%; height: 100%; position: relative; background-color: #000000; }
+        .light-circle { position: absolute; width: 140px; height: 140px; border-radius: 50%; mix-blend-mode: screen; filter: blur(4px); pointer-events: none; }
+        #circle-red { top: calc(50% - 100px); left: calc(50% - 70px); }
+        #circle-green { top: calc(50% - 100px); left: calc(50% - 10px); }
+        #circle-blue { top: calc(50% - 40px); left: calc(50% - 40px); }
+        .slider-group { display: flex; flex-direction: column; gap: 12px; }
+        .slider-row { display: flex; align-items: center; gap: 12px; }
+        .slider-label { font-size: 12px; font-weight: bold; width: 20px; }
+        
+        .success-banner { background-color: #04d361; color: #000000; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; margin-top: 8px; display: none; }
+        .action-btn { background-color: #4da6ff; color: #121214; padding: 8px 12px; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; display: none; align-items: center; justify-content: center; gap: 6px; cursor: pointer; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <button id="back-btn" class="nav-btn hidden" onclick="handleAndroidBack()">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <h1 id="app-title">Laboratório de Óptica</h1>
+        <button id="info-btn" class="nav-btn" onclick="openCurrentInfo()">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        </button>
+    </div>
+
+    <div id="view-menu" class="view active">
+        <div class="menu-container">
+            <div class="menu-grid">
+                <div class="menu-card" onclick="switchView('decomposition')">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#ffcc00"><path d="M12 3L2 21h20L12 3zm0 5l6.43 11H5.57L12 8z"/></svg></div>
+                    <div class="card-info"><h2>1. Decomposição da Luz</h2><p>Observe o prisma separar a luz branca.</p></div>
+                </div>
+                <div class="menu-card" onclick="switchView('reflection')">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#4da6ff"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg></div>
+                    <div class="card-info"><h2>2. Labirinto de Reflexão</h2><p>Acerte os ângulos de incidência e reflexão.</p></div>
+                </div>
+                <div class="menu-card" onclick="switchView('transmission')">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#33ff33"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
+                    <div class="card-info"><h2>3. Filtros de Luz</h2><p>Bloqueie espectros com películas opacas.</p></div>
+                </div>
+                <div class="menu-card" onclick="switchView('absorption')">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#ff3333"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10zm1-17.93c3.95.49 7 3.85 7 7.93 0 .62-.08 1.21-.21 1.79L13 7.17V4.07zM4 12c0-4.08 3.05-7.44 7-7.93v3.1l-6.79 6.79C4.08 13.21 4 12.62 4 12zm7 7.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L11 16.83v3.1z"/></svg></div>
+                    <div class="card-info"><h2>4. Quarto Escuro</h2><p>Mude a lâmpada e veja objetos sumirem.</p></div>
+                </div>
+                <div class="menu-card" onclick="switchView('addition')">
+                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#ea1d2c"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S12.67 5 13.5 5s1.5.67 1.5 1.5S14.33 8 13.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+                    <div class="card-info"><h2>5. Misturador RGB</h2><p>Combine luzes primárias em aditiva.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-decomposition" class="view">
+        <div class="lab-container">
+            <div class="canvas-area"><canvas id="decomposition-canvas"></canvas></div>
+            <div class="control-panel">
+                <span class="control-title">Ajuste o ângulo do raio de luz</span>
+                <div class="slider-wrapper">
+                    <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#8d8d99;"><path d="M12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+                    <input type="range" id="decomp-slider" class="range-input" min="10" max="90" value="25">
+                </div>
+                <div id="decomp-success" class="success-banner">Arco-íris Perfeito Encontrado!</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-reflection" class="view">
+        <div class="lab-container">
+            <div class="canvas-area" id="reflection-area">
+                <canvas id="reflection-canvas"></canvas>
+                <div class="grid-container" id="reflection-grid"></div>
+            </div>
+            <div class="control-panel">
+                <span class="control-title">Toque nos espelhos <span id="ref-level-text" style="color:#ffffff;">Fase 1/4</span></span>
+                <p style="font-size: 12px; color: #a8a8b3;">Física real: o ângulo em que a luz bate é igual ao ângulo que ela sai.</p>
+                <div id="reflection-success" class="success-banner">Alvo Atingido!</div>
+                <button id="reflection-next-btn" class="action-btn" onclick="nextRefLevel()">
+                    Próxima Fase <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#121214;"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-transmission" class="view">
+        <div class="lab-container">
+            <div class="canvas-area"><canvas id="transmission-canvas"></canvas></div>
+            <div class="control-panel">
+                <span class="control-title">Filtros Coloridos</span>
+                <div class="filter-bench">
+                    <div class="filter-slot" id="filter-r" onclick="toggleFilter('r')"><span class="filter-tag">VERMELHO</span></div>
+                    <div class="filter-slot" id="filter-g" onclick="toggleFilter('g')"><span class="filter-tag">VERDE</span></div>
+                    <div class="filter-slot" id="filter-b" onclick="toggleFilter('b')"><span class="filter-tag">AZUL</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-absorption" class="view">
+        <div class="lab-container">
+            <div class="canvas-area" style="background-color: #000;">
+                <div class="room-display" id="dark-room">
+                    <div class="room-object">
+                        <svg viewBox="0 0 24 24" id="obj-strawberry"><path d="M12 2s1.37 1.63 1.5 3.5c1.32-.47 2.76-.17 3.5.5.74.67 1.05 2.11.5 3.5 1.87.13 3.5 1.5 3.5 1.5s-2 8-9 8-9-8-9-8 1.63-1.37 3.5-1.5c-.55-1.39-.24-2.83.5-3.5.74-.67 2.18-.97 3.5-.5.13-1.87 1.5-3.5 1.5-3.5z"/></svg>
+                        <span class="object-caption">Morango</span>
+                    </div>
+                    <div class="room-object">
+                        <svg viewBox="0 0 24 24" id="obj-leaf"><path d="M17 2H7c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-5 16c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                        <span class="object-caption">Folha</span>
+                    </div>
+                </div>
+            </div>
+            <div class="control-panel">
+                <span class="control-title">Luz de Projeção</span>
+                <div class="btn-row">
+                    <button class="toggle-btn active" id="btn-light-white" onclick="setRoomLight('white')">Branca</button>
+                    <button class="toggle-btn" id="btn-light-red" onclick="setRoomLight('red')">Vermelha</button>
+                    <button class="toggle-btn" id="btn-light-green" onclick="setRoomLight('green')">Verde</button>
+                    <button class="toggle-btn" id="btn-light-blue" onclick="setRoomLight('blue')">Azul</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-addition" class="view">
+        <div class="lab-container">
+            <div class="canvas-area" style="background-color: #000;">
+                <div class="blend-view">
+                    <div class="light-circle" id="circle-red"></div>
+                    <div class="light-circle" id="circle-green"></div>
+                    <div class="light-circle" id="circle-blue"></div>
+                </div>
+            </div>
+            <div class="control-panel">
+                <span class="control-title">Controles (RGB)</span>
+                <div class="slider-group">
+                    <div class="slider-row"><span class="slider-label" style="color:#ff3333;">R</span><input type="range" id="slide-r" class="range-input" min="0" max="255" value="255" oninput="updateAdditiveMixing()"></div>
+                    <div class="slider-row"><span class="slider-label" style="color:#33ff33;">G</span><input type="range" id="slide-g" class="range-input" min="0" max="255" value="255" oninput="updateAdditiveMixing()"></div>
+                    <div class="slider-row"><span class="slider-label" style="color:#3333ff;">B</span><input type="range" id="slide-b" class="range-input" min="0" max="255" value="255" oninput="updateAdditiveMixing()"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="info-modal" class="modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="info-modal-title" class="modal-title">Instruções</h3>
+                <button class="modal-close" onclick="closeModal('info-modal')"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+            </div>
+            <div id="info-modal-body" class="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        var currentView = 'menu';
+
+        var infoTexts = {
+            'menu': { title: 'Laboratório de Óptica', body: '<p>Explore os laboratórios para testar propriedades da luz.</p>' },
+            'decomposition': { title: 'Decomposição', body: '<p>Ajuste o ângulo para quebrar a luz branca no espectro.</p>' },
+            'reflection': { title: 'Reflexão (Fases)', body: '<p>O ângulo de incidência é igual ao de reflexão. Resolva os labirintos usando espelhos para levar o laser até o alvo.</p>' },
+            'transmission': { title: 'Transmissão', body: '<p>Filtros bloqueiam outras cores. Dois filtros diferentes cruzados bloqueiam tudo.</p>' },
+            'absorption': { title: 'Absorção', body: '<p>Se um objeto vermelho receber luz azul, ele não terá vermelho para refletir e ficará preto.</p>' },
+            'addition': { title: 'Aditiva', body: '<p>Misturar luz é diferente de misturar tinta. RGB máximo = Branco.</p>' }
+        };
+
+        function handleAndroidBack() {
+            var activeModal = document.getElementById('info-modal');
+            if (activeModal.classList.contains('active')) { closeModal('info-modal'); return; }
+            if (currentView !== 'menu') { switchView('menu'); return; }
+            if (window.AppInventor && window.AppInventor.setWebViewString) { window.AppInventor.setWebViewString("FECHAR_APP"); }
+        }
+
+        function receberTextoDoKodular(texto) {}
+
+        function switchView(viewId) {
+            var views = document.querySelectorAll('.view');
+            for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+            document.getElementById('view-' + viewId).classList.add('active');
+            document.getElementById('app-title').innerText = viewId === 'menu' ? "Laboratório" : infoTexts[viewId].title;
+            document.getElementById('back-btn').className = viewId === 'menu' ? "nav-btn hidden" : "nav-btn";
+            currentView = viewId;
+            if (viewId !== 'menu') setTimeout(function(){ initLabMechanics(viewId); }, 50);
+        }
+
+        function openCurrentInfo() {
+            var data = infoTexts[currentView];
+            document.getElementById('info-modal-title').innerText = data.title;
+            document.getElementById('info-modal-body').innerHTML = data.body;
+            document.getElementById('info-modal').classList.add('active');
+        }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+        function handleOverlayClick(e) { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); }
+
+        function initLabMechanics(viewId) {
+            if (viewId === 'decomposition') initDecomposition();
+            if (viewId === 'reflection') { currentRefLevel = 0; loadRefLevel(0); }
+            if (viewId === 'transmission') initTransmission();
+            if (viewId === 'absorption') setRoomLight('white');
+            if (viewId === 'addition') updateAdditiveMixing();
+        }
+
+        /* 1. DECOMPOSIÇÃO */
+        function initDecomposition() {
+            var canvas = document.getElementById('decomposition-canvas'), ctx = canvas.getContext('2d'), slider = document.getElementById('decomp-slider'), banner = document.getElementById('decomp-success');
+            function draw() {
+                var w = canvas.parentElement.clientWidth || window.innerWidth - 24;
+                var h = canvas.parentElement.clientHeight || 240;
+                canvas.width = w; canvas.height = h; ctx.clearRect(0, 0, w, h);
+                var cx = w / 2, cy = h / 2 + 10, size = 70;
+                ctx.beginPath(); ctx.moveTo(cx, cy - size); ctx.lineTo(cx + size, cy + size); ctx.lineTo(cx - size, cy + size); ctx.closePath();
+                ctx.strokeStyle = '#41414c'; ctx.lineWidth = 3; ctx.stroke();
+                var val = parseInt(slider.value), startY = (h * (val / 100));
+                ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(cx - size/2, cy + size/4); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4; ctx.stroke();
+                if (val >= 42 && val <= 48) {
+                    banner.style.display = 'block';
+                    ctx.beginPath(); ctx.moveTo(cx - size/2, cy + size/4); ctx.lineTo(cx + size/2, cy + size/3); ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 3; ctx.stroke();
+                    var colors = ['#ff3333','#ff9933','#ffff33','#33ff33','#3399ff','#3333ff','#9933ff'];
+                    for(var i=0; i<colors.length; i++) {
+                        ctx.beginPath(); ctx.moveTo(cx + size/2, cy + size/3); ctx.lineTo(w, (h * 0.2) + (i * 22)); ctx.strokeStyle = colors[i]; ctx.lineWidth = 4; ctx.stroke();
+                    }
+                } else {
+                    banner.style.display = 'none';
+                    ctx.beginPath(); ctx.moveTo(cx - size/2, cy + size/4); ctx.lineTo(cx + size/2, cy + size/2); ctx.lineTo(w, cy + size * 1.2); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
+                }
+            }
+            slider.oninput = draw; window.addEventListener('resize', draw); draw();
+        }
+
+        /* 2. REFLEXÃO - MOTOR FÍSICO COM FASES */
+        var currentRefLevel = 0;
+        var refLevels = [
+            { cols: 4, rows: 5, emitter: {x:0, y:1, dx:1, dy:0}, target: {x:2, y:4}, mirrors: [{x:2, y:1, st:0}], blocks: [] }, // Fase 1
+            { cols: 4, rows: 5, emitter: {x:0, y:1, dx:1, dy:0}, target: {x:3, y:3}, mirrors: [{x:1, y:1, st:0}, {x:1, y:3, st:0}], blocks: [] }, // Fase 2
+            { cols: 4, rows: 5, emitter: {x:0, y:4, dx:0, dy:-1}, target: {x:3, y:3}, mirrors: [{x:0, y:1, st:0}, {x:2, y:1, st:0}, {x:2, y:3, st:0}], blocks: [{x:1, y:2}] }, // Fase 3
+            { cols: 4, rows: 5, emitter: {x:0, y:0, dx:1, dy:0}, target: {x:1, y:2}, mirrors: [{x:3, y:0, st:0}, {x:3, y:4, st:0}, {x:0, y:4, st:0}, {x:0, y:2, st:0}], blocks: [{x:1, y:1}, {x:2, y:1}, {x:2, y:3}, {x:1, y:3}] } // Fase 4
+        ];
+
+        function loadRefLevel(idx) {
+            currentRefLevel = idx; var lvl = refLevels[idx];
+            var grid = document.getElementById('reflection-grid'); grid.innerHTML = '';
+            grid.style.gridTemplateColumns = 'repeat(' + lvl.cols + ', 1fr)'; grid.style.gridTemplateRows = 'repeat(' + lvl.rows + ', 1fr)';
+            for (var i = 0; i < lvl.mirrors.length; i++) lvl.mirrors[i].st = 0;
+
+            for (var y = 0; y < lvl.rows; y++) {
+                for (var x = 0; x < lvl.cols; x++) {
+                    var cell = document.createElement('div'); cell.className = 'grid-cell'; var html = '';
+                    if (x === lvl.emitter.x && y === lvl.emitter.y) {
+                        var rot = '0deg'; if(lvl.emitter.dx === -1) rot='180deg'; if(lvl.emitter.dy === -1) rot='-90deg'; if(lvl.emitter.dy === 1) rot='90deg';
+                        html = '<div class="cell-element emitter-icon" style="transform: rotate('+rot+')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 13h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>';
+                    } else if (x === lvl.target.x && y === lvl.target.y) {
+                        html = '<div class="cell-element target-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 5l6.43 11H5.57L12 7z"/></svg></div>';
+                    } else {
+                        var isM = false;
+                        for (var m = 0; m < lvl.mirrors.length; m++) {
+                            if (lvl.mirrors[m].x === x && lvl.mirrors[m].y === y) {
+                                html = '<div class="cell-element mirror-element deg0" id="m'+m+'" onclick="rotateMirror('+m+')"><div class="mirror-line"></div></div>'; isM = true; break;
+                            }
+                        }
+                        if (!isM) {
+                            for (var b = 0; b < lvl.blocks.length; b++) {
+                                if (lvl.blocks[b].x === x && lvl.blocks[b].y === y) { html = '<div class="cell-element" style="background:#29292e; border-radius:4px;"></div>'; break; }
+                            }
+                        }
+                    }
+                    cell.innerHTML = html; grid.appendChild(cell);
+                }
+            }
+            document.getElementById('ref-level-text').innerText = "Fase " + (idx + 1) + "/4";
+            document.getElementById('reflection-next-btn').style.display = 'none';
+            traceLaser();
+        }
+
+        function rotateMirror(mIdx) {
+            var m = refLevels[currentRefLevel].mirrors[mIdx]; m.st = (m.st + 1) % 3;
+            var el = document.getElementById('m' + mIdx);
+            el.className = m.st === 0 ? "cell-element mirror-element deg0" : (m.st === 1 ? "cell-element mirror-element deg45" : "cell-element mirror-element deg135");
+            traceLaser();
+        }
+
+        function nextRefLevel() { if (currentRefLevel < 3) loadRefLevel(currentRefLevel + 1); }
+
+        function traceLaser() {
+            var canvas = document.getElementById('reflection-canvas'), ctx = canvas.getContext('2d'), area = document.getElementById('reflection-area');
+            var banner = document.getElementById('reflection-success'), nextBtn = document.getElementById('reflection-next-btn');
+            var w = area.clientWidth || window.innerWidth - 24, h = area.clientHeight || 240;
+            canvas.width = w; canvas.height = h; ctx.clearRect(0, 0, w, h);
+            var lvl = refLevels[currentRefLevel], cw = w / lvl.cols, ch = h / lvl.rows;
+            var px = lvl.emitter.x, py = lvl.emitter.y, dx = lvl.emitter.dx, dy = lvl.emitter.dy;
+            var points = [{x: (px * cw) + cw/2, y: (py * ch) + ch/2}];
+            var steps = 0, win = false;
+
+            while (steps < 40) {
+                steps++; px += dx; py += dy;
+                if (px < 0 || px >= lvl.cols || py < 0 || py >= lvl.rows) {
+                    points.push({x: (px * cw) + cw/2 - (dx * cw/2), y: (py * ch) + ch/2 - (dy * ch/2)}); break;
+                }
+                points.push({x: (px * cw) + cw/2, y: (py * ch) + ch/2});
+                if (px === lvl.target.x && py === lvl.target.y) { win = true; break; }
+                
+                var hitB = false; for(var b=0; b<lvl.blocks.length; b++) { if(lvl.blocks[b].x===px && lvl.blocks[b].y===py) hitB=true; }
+                if (hitB) break;
+                
+                // Física Universal de Reflexão
+                for(var m=0; m<lvl.mirrors.length; m++) {
+                    if(lvl.mirrors[m].x === px && lvl.mirrors[m].y === py) {
+                        var st = lvl.mirrors[m].st;
+                        if (st === 1) { // '\'
+                            if(dx===1){dx=0;dy=1;} else if(dx===-1){dx=0;dy=-1;} else if(dy===1){dx=1;dy=0;} else if(dy===-1){dx=-1;dy=0;}
+                        } else if (st === 2) { // '/'
+                            if(dx===1){dx=0;dy=-1;} else if(dx===-1){dx=0;dy=1;} else if(dy===1){dx=-1;dy=0;} else if(dy===-1){dx=1;dy=0;}
+                        }
+                    }
+                }
+            }
+
+            ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y);
+            for(var j=1; j<points.length; j++) ctx.lineTo(points[j].x, points[j].y);
+            ctx.strokeStyle = '#ff3333'; ctx.lineWidth = 4; ctx.shadowColor = '#ff3333'; ctx.shadowBlur = 10; ctx.stroke();
+
+            if (win) {
+                banner.style.display = 'block'; banner.innerText = currentRefLevel < 3 ? "Alvo Atingido!" : "Desafio Final Concluído!";
+                nextBtn.style.display = currentRefLevel < 3 ? 'flex' : 'none';
+            } else {
+                banner.style.display = 'none'; nextBtn.style.display = 'none';
+            }
+        }
+
+        /* 3. TRANSMISSÃO */
+        var activeF = { r: false, g: false, b: false };
+        function initTransmission() {
+            var canvas = document.getElementById('transmission-canvas'), ctx = canvas.getContext('2d');
+            function draw() {
+                var w = canvas.parentElement.clientWidth || window.innerWidth - 24, h = canvas.parentElement.clientHeight || 240;
+                canvas.width = w; canvas.height = h; ctx.clearRect(0, 0, w, h);
+                var midY = h / 2, sec = w / 4;
+                var colors = { r: '#ff3333', g: '#33ff33', b: '#3333ff' }, keys = ['r', 'g', 'b'];
+                for (var i = 0; i < 3; i++) {
+                    var key = keys[i], xp = sec * (i + 1);
+                    ctx.strokeStyle = activeF[key] ? colors[key] : '#29292e'; ctx.lineWidth = activeF[key] ? 4 : 1;
+                    ctx.setLineDash(activeF[key] ? [] : [4,4]); ctx.strokeRect(xp - 15, midY - 50, 30, 100); ctx.setLineDash([]);
+                }
+                ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(sec, midY); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 5; ctx.stroke();
+                var c2 = activeF.r ? '#ff3333' : '#ffffff';
+                ctx.beginPath(); ctx.moveTo(sec, midY); ctx.lineTo(sec*2, midY); ctx.strokeStyle = c2; ctx.lineWidth = c2 === '#000000' ? 1 : 5; ctx.stroke();
+                var c3 = c2; if(activeF.g){ c3 = c3==='#ffffff' ? '#33ff33' : '#000000'; }
+                ctx.beginPath(); ctx.moveTo(sec*2, midY); ctx.lineTo(sec*3, midY); ctx.strokeStyle = c3; ctx.lineWidth = c3 === '#000000' ? 1 : 5; ctx.stroke();
+                var c4 = c3; if(activeF.b){ c4 = c4==='#ffffff' ? '#3333ff' : '#000000'; }
+                ctx.beginPath(); ctx.moveTo(sec*3, midY); ctx.lineTo(w-20, midY); ctx.strokeStyle = c4; ctx.lineWidth = c4 === '#000000' ? 1 : 5; ctx.stroke();
+                ctx.beginPath(); ctx.arc(w-15, midY, 12, 0, 2*Math.PI); ctx.fillStyle = c4==='#000000' ? '#121214' : c4; ctx.fill();
+            }
+            window.toggleFilter = function(k) { activeF[k] = !activeF[k]; document.getElementById('filter-'+k).className = activeF[k] ? 'filter-slot active-'+k : 'filter-slot'; draw(); };
+            window.addEventListener('resize', draw); draw();
+        }
+
+        /* 4. ABSORÇÃO */
+        function setRoomLight(c) {
+            var btns = document.querySelectorAll('.toggle-btn'); for(var i=0; i<btns.length; i++) btns[i].classList.remove('active');
+            document.getElementById('btn-light-'+c).classList.add('active');
+            var room = document.getElementById('dark-room'), straw = document.getElementById('obj-strawberry'), leaf = document.getElementById('obj-leaf');
+            if(c==='white'){ room.style.backgroundColor='#1a1a1e'; straw.style.fill='#ff4d4d'; leaf.style.fill='#4dff4d'; }
+            else if(c==='red'){ room.style.backgroundColor='#400000'; straw.style.fill='#ff4d4d'; leaf.style.fill='#121214'; }
+            else if(c==='green'){ room.style.backgroundColor='#004000'; straw.style.fill='#121214'; leaf.style.fill='#4dff4d'; }
+            else if(c==='blue'){ room.style.backgroundColor='#000040'; straw.style.fill='#121214'; leaf.style.fill='#121214'; }
+        }
+
+        /* 5. ADITIVA */
+        function updateAdditiveMixing() {
+            var r = document.getElementById('slide-r').value, g = document.getElementById('slide-g').value, b = document.getElementById('slide-b').value;
+            document.getElementById('circle-red').style.backgroundColor = 'rgb('+r+',0,0)';
+            document.getElementById('circle-green').style.backgroundColor = 'rgb(0,'+g+',0)';
+            document.getElementById('circle-blue').style.backgroundColor = 'rgb(0,0,'+b+')';
+        }
+
+        window.onload = function() { switchView('menu'); };
+    </script>
+</body>
+</html>
