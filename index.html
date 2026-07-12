@@ -3,476 +3,1267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Laboratório de Óptica</title>
+    <meta name="theme-color" id="meta-theme-color" content="#38cde0">
+    <title>SLGestão Administrativo</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box; margin: 0; padding: 0;
-            user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+        :root { 
+            --primary: #38cde0; 
+            --primary-dark: #0097a7; 
+            --primary-light: #e0f7fa;
+            --bg: #F4F6F8; 
+            --surface: #ffffff; 
+            --text-main: #2c3e50; 
+            --text-muted: #7f8c8d;
+            --border: #e2e8f0;
+            --danger: #e74c3c; 
+            --success: #2ecc71; 
+            --warning: #f39c12;
+            --sidebar-width: 250px;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121214; color: #e1e1e6; overflow: hidden; height: 100vh; width: 100vw;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', 'Roboto', sans-serif; margin: 0; background-color: var(--bg); color: var(--text-main); overflow: hidden; display: flex; height: 100vh; }
 
-        .view { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; padding-top: 60px; }
-        .view.active { display: block; }
+        /* --- LAYOUT PRINCIPAL (DESKTOP) --- */
+        #sidebar { width: var(--sidebar-width); background: var(--surface); box-shadow: 2px 0 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; z-index: 50; flex-shrink: 0; }
+        .sidebar-brand { height: 70px; display: flex; align-items: center; padding: 0 20px; font-size: 1.4rem; font-weight: 900; color: var(--primary-dark); border-bottom: 1px solid var(--border); letter-spacing: 0.5px; }
+        .sidebar-brand svg { width: 24px; height: 24px; fill: var(--primary); margin-right: 10px; }
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 20px 0; }
+        .menu-item { display: flex; align-items: center; padding: 14px 20px; color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s; border-left: 4px solid transparent; }
+        .menu-item .material-icons { margin-right: 12px; font-size: 1.3rem; }
+        .menu-item:hover { background: var(--bg); color: var(--primary-dark); }
+        .menu-item.active { background: var(--primary-light); color: var(--primary-dark); border-left-color: var(--primary); }
 
-        .top-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            background-color: #1a1a1e; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); z-index: 100;
-        }
-
-        .top-bar h1 { font-size: 18px; font-weight: 600; color: #ffffff; text-align: center; flex-grow: 1; }
-        .nav-btn {
-            background: none; border: none; cursor: pointer; width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s;
-        }
-        .nav-btn:active { background-color: #29292e; }
-        .nav-btn svg { width: 24px; height: 24px; fill: #a8a8b3; }
-        .nav-btn.hidden { visibility: hidden; }
-
-        .menu-container { padding: 16px; height: 100%; overflow-y: auto; }
-        .menu-grid { display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
-        .menu-card {
-            background-color: #1a1a1e; border: 1px solid #29292e; border-radius: 12px;
-            padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer;
-        }
-        .menu-card:active { transform: scale(0.98); border-color: #41414c; }
-
-        .card-icon { width: 48px; height: 48px; background-color: #29292e; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .card-icon svg { width: 28px; height: 28px; }
-        .card-info h2 { font-size: 15px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
-        .card-info p { font-size: 12px; color: #8d8d99; line-height: 1.4; }
-
-        .lab-container { display: flex; flex-direction: column; height: 100%; padding: 12px; }
-        .canvas-area { flex-grow: 1; background-color: #09090a; border-radius: 12px; border: 1px solid #202024; position: relative; overflow: hidden; min-height: 240px; }
-        .control-panel { background-color: #1a1a1e; border: 1px solid #29292e; border-radius: 12px; padding: 14px; margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
-        .control-title { font-size: 13px; color: #8d8d99; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: rgba(0, 0, 0, 0.75); z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal-box {
-            background-color: #1a1a1e; border: 1px solid #29292e; border-radius: 16px;
-            width: 100%; max-width: 400px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); position: relative;
-        }
-        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .modal-title { font-size: 16px; font-weight: 600; color: #ffffff; }
-        .modal-close { background: none; border: none; cursor: pointer; padding: 4px; }
-        .modal-close svg { width: 20px; height: 20px; fill: #8d8d99; }
-        .modal-body { font-size: 14px; color: #c4c4cc; line-height: 1.5; }
-        .modal-body p { margin-bottom: 10px; }
-
-        .slider-wrapper { display: flex; align-items: center; gap: 12px; }
-        .range-input { flex-grow: 1; -webkit-appearance: none; background: #29292e; height: 8px; border-radius: 4px; outline: none; }
-        .range-input::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; cursor: pointer; }
-
-        /* Grade do Labirinto */
-        .grid-container { display: grid; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        .grid-cell { border: 1px dashed #1f1f23; display: flex; align-items: center; justify-content: center; position: relative; }
-        .cell-element { width: 75%; height: 75%; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
-        .mirror-element { cursor: pointer; border: 2px solid #41414c; background-color: rgba(255,255,255,0.05); border-radius: 4px; position: relative; }
-        .mirror-line { width: 100%; height: 4px; background-color: #4da6ff; box-shadow: 0 0 8px #4da6ff; transform: rotate(0deg); }
-        .mirror-element.deg45 .mirror-line { transform: rotate(45deg); }
-        .mirror-element.deg135 .mirror-line { transform: rotate(135deg); }
-        .mirror-element.deg0 .mirror-line { display: none; }
-        .emitter-icon svg { fill: #ff3333; width: 28px; height: 28px; }
-        .target-icon svg { fill: #ffcc00; width: 28px; height: 28px; }
-        #reflection-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
-
-        .filter-bench { display: flex; justify-content: space-around; align-items: center; height: 100%; padding: 0 20px; }
-        .filter-slot { width: 60px; height: 120px; border: 2px dashed #29292e; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background-color: rgba(0,0,0,0.3); }
-        .filter-slot.active-r { border-color: #ff3333; background-color: rgba(255, 51, 51, 0.15); }
-        .filter-slot.active-g { border-color: #33ff33; background-color: rgba(51, 255, 51, 0.15); }
-        .filter-slot.active-b { border-color: #3333ff; background-color: rgba(51, 51, 255, 0.15); }
-        .filter-tag { font-size: 11px; font-weight: bold; color: #8d8d99; margin-top: 8px; }
-
-        .room-display { display: flex; justify-content: space-around; align-items: center; height: 100%; padding: 20px; transition: background-color 0.3s; }
-        .room-object { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .room-object svg { width: 64px; height: 64px; transition: filter 0.3s, fill 0.3s; }
-        .object-caption { font-size: 12px; color: #c4c4cc; font-weight: 500; }
-        .btn-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .toggle-btn { background-color: #29292e; border: 1px solid #41414c; color: #e1e1e6; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .toggle-btn.active { background-color: #ffffff; color: #121214; border-color: #ffffff; }
-
-        .blend-view { width: 100%; height: 100%; position: relative; background-color: #000000; }
-        .light-circle { position: absolute; width: 140px; height: 140px; border-radius: 50%; mix-blend-mode: screen; filter: blur(4px); pointer-events: none; }
-        #circle-red { top: calc(50% - 100px); left: calc(50% - 70px); }
-        #circle-green { top: calc(50% - 100px); left: calc(50% - 10px); }
-        #circle-blue { top: calc(50% - 40px); left: calc(50% - 40px); }
-        .slider-group { display: flex; flex-direction: column; gap: 12px; }
-        .slider-row { display: flex; align-items: center; gap: 12px; }
-        .slider-label { font-size: 12px; font-weight: bold; width: 20px; }
+        #main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
-        .success-banner { background-color: #04d361; color: #000000; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; margin-top: 8px; display: none; }
-        .action-btn { background-color: #4da6ff; color: #121214; padding: 8px 12px; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; display: none; align-items: center; justify-content: center; gap: 6px; cursor: pointer; margin-top: 8px; }
+        #topbar { height: 70px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); z-index: 40; flex-shrink: 0; }
+        .topbar-title { display: flex; align-items: center; gap: 15px; font-size: 1.2rem; font-weight: bold; color: var(--text-main); }
+        .btn-back { display: none; background: var(--bg); border: none; border-radius: 8px; width: 36px; height: 36px; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); transition: 0.2s; }
+        .btn-back:hover { background: var(--border); }
+        .topbar-actions { display: flex; gap: 10px; }
+        .topbar-btn { display: flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); color: var(--text-main); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
+        .topbar-btn:hover { background: var(--border); }
+
+        #content-area { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+        
+        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+
+        /* --- COMPONENTES --- */
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        .card { background: var(--surface); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border); transition: transform 0.1s, box-shadow 0.2s; position: relative; cursor: pointer;}
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+        .card-header { padding: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .card-title { font-size: 1.15rem; font-weight: bold; color: var(--text-main); margin-bottom: 5px; }
+        .card-subtitle { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+        
+        .card-band { padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: bold; letter-spacing: 0.5px; color: white; }
+        .bg-stable { background-color: var(--success); }
+        .bg-unstable { background-color: var(--danger); }
+        .bg-none { background-color: #95a5a6; }
+
+        .card-footer { padding: 12px 20px; background: #fafbfc; display: flex; justify-content: space-between; align-items: center; }
+
+        /* --- TELA DETALHADA SPLIT-VIEW --- */
+        .split-view { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+        @media (max-width: 900px) { .split-view { grid-template-columns: 1fr; } }
+        
+        .panel { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .panel-title { font-size: 1.1rem; color: var(--text-main); font-weight: bold; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--bg); padding-bottom: 15px; margin-top: 0; margin-bottom: 20px; }
+
+        /* --- FORMULÁRIOS --- */
+        .input-group { margin-bottom: 18px; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; background: #fafbfc; transition: 0.2s; font-family: inherit; color: var(--text-main); }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-light); }
+        
+        .input-readonly { background: #eef2f5 !important; border-color: transparent !important; font-weight: bold; color: var(--text-muted) !important; cursor: not-allowed; }
+
+        .flex-row { display: flex; gap: 15px; }
+        .flex-row > div { flex: 1; }
+
+        .limit-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+        .limit-row:last-child { border-bottom: none; }
+        .limit-row span { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+        .stepper { display: flex; align-items: center; gap: 8px; }
+        .stepper button { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); font-weight: bold; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s; }
+        .stepper button:hover { background: var(--bg); }
+        .stepper input { width: 45px; text-align: center; padding: 6px; border: 1px solid var(--border); border-radius: 6px; font-weight: bold; background: var(--bg); }
+
+        .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; width: 100%; margin-top: 10px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { border-color: var(--text-muted); }
+        .btn-danger { background: rgba(231,76,60,0.1); color: var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: white; }
+
+        .list-container { max-height: 300px; overflow-y: auto; padding-right: 5px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .list-item-title { font-weight: bold; color: var(--text-main); font-size: 0.95rem; }
+        .list-item-sub { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 3px; }
+        .icon-action { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; border-radius: 4px; display: flex; }
+        .icon-action:hover { background: var(--border); color: var(--text-main); }
+
+        .dash-stats { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-box { flex: 1; background: var(--bg); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
+        .stat-box strong { display: block; font-size: 1.6rem; color: var(--primary-dark); margin-bottom: 5px; }
+        .stat-box span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
+
+        .toggle-container { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .toggle-label { font-weight: bold; font-size: 0.9rem; color: var(--text-main); }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(3px); cursor: pointer; }
+        .modal-content { background: var(--surface); padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); cursor: default; animation: scaleUp 0.2s ease; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .modal-header h2 { margin: 0; font-size: 1.3rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;}
+        
+        #toast { visibility: hidden; min-width: 250px; background-color: var(--text-main); color: #fff; text-align: center; border-radius: 8px; padding: 14px; position: fixed; z-index: 200; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9rem; opacity: 0; transition: opacity 0.3s, bottom 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        #toast.show { visibility: visible; opacity: 1; bottom: 40px; }
+
+        #print-area { display: none; }
+        @media print {
+            body { background: white; margin: 0; padding: 0; height: auto; overflow: auto; color: black; }
+            #sidebar, #topbar, .screen, .modal-overlay, #toast { display: none !important; }
+            #print-area { display: block !important; position: static; width: 100%; padding: 20px; }
+            .print-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            .print-header h1 { margin: 0; font-size: 24px; color: black; }
+            .print-header p { margin: 5px 0 0 0; font-size: 14px; color: #333; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+            .print-table th, .print-table td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+            .print-table th { background-color: #eee; font-weight: bold; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <button id="back-btn" class="nav-btn hidden" onclick="handleAndroidBack()">
-            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-        </button>
-        <h1 id="app-title">Laboratório de Óptica</h1>
-        <button id="info-btn" class="nav-btn" onclick="openCurrentInfo()">
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        </button>
+<aside id="sidebar">
+    <div class="sidebar-brand">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/></svg>
+        SLGestão
     </div>
+    <nav class="sidebar-menu">
+        <a class="menu-item active" id="nav-dashboard" onclick="navTo('dashboard')"><span class="material-icons">dashboard</span>Painel Geral</a>
+        <a class="menu-item" id="nav-classes" onclick="navTo('classes')"><span class="material-icons">school</span>Turmas Ativas</a>
+        <a class="menu-item" id="nav-transports" onclick="navTo('transports')"><span class="material-icons">directions_bus</span>Transportes</a>
+        <a class="menu-item" id="nav-archived" onclick="navTo('archived')"><span class="material-icons">archive</span>Arquivo Morto</a>
+        <a class="menu-item" id="nav-audit" onclick="navTo('audit')"><span class="material-icons">plagiarism</span>Auditoria</a>
+        <a class="menu-item" id="nav-settings" onclick="navTo('settings')" style="margin-top: 20px; border-top: 1px solid var(--border);"><span class="material-icons">settings</span>Sistema e Regras</a>
+    </nav>
+</aside>
 
-    <div id="view-menu" class="view active">
-        <div class="menu-container">
-            <div class="menu-grid">
-                <div class="menu-card" onclick="switchView('decomposition')">
-                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#ffcc00"><path d="M12 3L2 21h20L12 3zm0 5l6.43 11H5.57L12 8z"/></svg></div>
-                    <div class="card-info"><h2>1. Decomposição da Luz</h2><p>Observe o prisma separar a luz branca.</p></div>
-                </div>
-                <div class="menu-card" onclick="switchView('reflection')">
-                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#4da6ff"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg></div>
-                    <div class="card-info"><h2>2. Labirinto de Reflexão</h2><p>Acerte os ângulos de incidência e reflexão.</p></div>
-                </div>
-                <div class="menu-card" onclick="switchView('transmission')">
-                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#33ff33"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
-                    <div class="card-info"><h2>3. Filtros de Luz</h2><p>Bloqueie espectros com películas opacas.</p></div>
-                </div>
-                <div class="menu-card" onclick="switchView('absorption')">
-                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#ff3333"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10zm1-17.93c3.95.49 7 3.85 7 7.93 0 .62-.08 1.21-.21 1.79L13 7.17V4.07zM4 12c0-4.08 3.05-7.44 7-7.93v3.1l-6.79 6.79C4.08 13.21 4 12.62 4 12zm7 7.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L11 16.83v3.1z"/></svg></div>
-                    <div class="card-info"><h2>4. Quarto Escuro</h2><p>Mude a lâmpada e veja objetos sumirem.</p></div>
-                </div>
-                <div class="menu-card" onclick="switchView('addition')">
-                    <div class="card-icon"><svg viewBox="0 0 24 24" fill="#ea1d2c"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S12.67 5 13.5 5s1.5.67 1.5 1.5S14.33 8 13.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
-                    <div class="card-info"><h2>5. Misturador RGB</h2><p>Combine luzes primárias em aditiva.</p></div>
-                </div>
+<div id="main-wrapper">
+    <header id="topbar">
+        <div class="topbar-title">
+            <button class="btn-back" id="btn-back" onclick="handleBackNavigation()"><span class="material-icons">arrow_back</span></button>
+            <span id="header-title">Painel Geral</span>
+        </div>
+        <div class="topbar-actions" id="topbar-actions">
+            <button class="topbar-btn" onclick="abrirModalUploadGlobal()"><span class="material-icons" style="color:var(--primary);">cloud_download</span> Sincronizar Frequência</button>
+        </div>
+    </header>
+
+    <div id="content-area">
+        
+        <div id="screen-dashboard" class="screen active">
+            <div class="dash-stats">
+                <div class="stat-box"><strong id="dash-st">0</strong><span>Turmas Estáveis</span></div>
+                <div class="stat-box"><strong id="dash-un" style="color:var(--danger);">0</strong><span style="color:var(--danger);">Requerem Atenção</span></div>
+                <div class="stat-box"><strong id="dash-no" style="color:var(--text-muted);">0</strong><span>Aguardando Dados</span></div>
+            </div>
+            <div class="panel">
+                <h3 class="panel-title"><span class="material-icons">monitor_heart</span> Radar de Turmas</h3>
+                <div id="dash-lists" class="grid-cards" style="grid-template-columns: 1fr;"></div>
             </div>
         </div>
-    </div>
 
-    <div id="view-decomposition" class="view">
-        <div class="lab-container">
-            <div class="canvas-area"><canvas id="decomposition-canvas"></canvas></div>
-            <div class="control-panel">
-                <span class="control-title">Ajuste o ângulo do raio de luz</span>
-                <div class="slider-wrapper">
-                    <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#8d8d99;"><path d="M12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
-                    <input type="range" id="decomp-slider" class="range-input" min="10" max="90" value="25">
-                </div>
-                <div id="decomp-success" class="success-banner">Arco-íris Perfeito Encontrado!</div>
+        <div id="screen-classes" class="screen">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
+                <h2 style="margin:0; font-size:1.4rem;">Turmas em Operação</h2>
+                <button class="btn btn-primary" style="width:auto; margin:0;" onclick="abrirModalAddTurma()"><span class="material-icons">add</span> Nova Turma</button>
             </div>
+            <div id="classes-grid" class="grid-cards"></div>
         </div>
-    </div>
 
-    <div id="view-reflection" class="view">
-        <div class="lab-container">
-            <div class="canvas-area" id="reflection-area">
-                <canvas id="reflection-canvas"></canvas>
-                <div class="grid-container" id="reflection-grid"></div>
-            </div>
-            <div class="control-panel">
-                <span class="control-title">Toque nos espelhos <span id="ref-level-text" style="color:#ffffff;">Fase 1/4</span></span>
-                <p style="font-size: 12px; color: #a8a8b3;">Física real: o ângulo em que a luz bate é igual ao ângulo que ela sai.</p>
-                <div id="reflection-success" class="success-banner">Alvo Atingido!</div>
-                <button id="reflection-next-btn" class="action-btn" onclick="nextRefLevel()">
-                    Próxima Fase <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#121214;"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-                </button>
-            </div>
-        </div>
-    </div>
+        <div id="screen-class-detail" class="screen">
+            <div class="split-view">
+                <div>
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">settings_suggest</span> Identificação e Regras</h3>
+                        <div class="flex-row">
+                            <div class="input-group"><label>Turma</label><input type="text" id="class-name" class="input-readonly" disabled></div>
+                            <div class="input-group"><label>Segmento</label><input type="text" id="class-segmento" class="input-readonly" disabled></div>
+                        </div>
+                        <div class="flex-row">
+                            <div class="input-group"><label>Turno</label><input type="text" id="class-turno" class="input-readonly" disabled></div>
+                            <div class="input-group">
+                                <label>Status Operacional</label>
+                                <select id="class-status"><option value="none">Aguardando Avaliação</option><option value="stable">Estável (Sinal Verde)</option><option value="unstable">Instável (Requer Intervenção)</option></select>
+                            </div>
+                        </div>
+                        <div class="flex-row">
+                            <div class="input-group"><label>Professor Resp.</label><input type="text" id="class-prof"></div>
+                            <div class="input-group"><label>WhatsApp</label><input type="tel" id="class-wpp" placeholder="DDD + Número"></div>
+                        </div>
+                        
+                        <div class="toggle-container" style="margin-top:15px;">
+                            <span class="toggle-label">Herdar Regras Padrão do Sistema</span>
+                            <label class="switch"><input type="checkbox" id="class-use-universal" onchange="toggleCustomLimits()"><span class="slider"></span></label>
+                        </div>
 
-    <div id="view-transmission" class="view">
-        <div class="lab-container">
-            <div class="canvas-area"><canvas id="transmission-canvas"></canvas></div>
-            <div class="control-panel">
-                <span class="control-title">Filtros Coloridos</span>
-                <div class="filter-bench">
-                    <div class="filter-slot" id="filter-r" onclick="toggleFilter('r')"><span class="filter-tag">VERMELHO</span></div>
-                    <div class="filter-slot" id="filter-g" onclick="toggleFilter('g')"><span class="filter-tag">VERDE</span></div>
-                    <div class="filter-slot" id="filter-b" onclick="toggleFilter('b')"><span class="filter-tag">AZUL</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
+                        <div id="custom-limits-container" style="display:none; background:#fafbfc; padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:15px;">
+                            <div class="limit-row"><span>Limite Simultâneo (Alunos fora)</span><div class="stepper"><button onclick="changeLimitVal('class-max-out', -1)">-</button><input type="number" id="class-max-out" value="1"><button onclick="changeLimitVal('class-max-out', 1)">+</button></div></div>
+                            <div class="limit-row"><span>Passes de Banheiro</span><div class="stepper"><button onclick="changeLimitVal('class-lim-banheiro', -1)">-</button><input type="number" id="class-lim-banheiro" value="2"><button onclick="changeLimitVal('class-lim-banheiro', 1)">+</button></div></div>
+                            <div class="limit-row"><span>Passes de Água</span><div class="stepper"><button onclick="changeLimitVal('class-lim-agua', -1)">-</button><input type="number" id="class-lim-agua" value="2"><button onclick="changeLimitVal('class-lim-agua', 1)">+</button></div></div>
+                            <div class="limit-row"><span>Passes Externos Especiais</span><div class="stepper"><button onclick="changeLimitVal('class-lim-externo', -1)">-</button><input type="number" id="class-lim-externo" value="1"><button onclick="changeLimitVal('class-lim-externo', 1)">+</button></div></div>
+                        </div>
 
-    <div id="view-absorption" class="view">
-        <div class="lab-container">
-            <div class="canvas-area" style="background-color: #000;">
-                <div class="room-display" id="dark-room">
-                    <div class="room-object">
-                        <svg viewBox="0 0 24 24" id="obj-strawberry"><path d="M12 2s1.37 1.63 1.5 3.5c1.32-.47 2.76-.17 3.5.5.74.67 1.05 2.11.5 3.5 1.87.13 3.5 1.5 3.5 1.5s-2 8-9 8-9-8-9-8 1.63-1.37 3.5-1.5c-.55-1.39-.24-2.83.5-3.5.74-.67 2.18-.97 3.5-.5.13-1.87 1.5-3.5 1.5-3.5z"/></svg>
-                        <span class="object-caption">Morango</span>
+                        <div class="input-group" style="margin-bottom:0;"><label>Corte do Intervalo/Recreio</label><input type="time" id="class-break-time" value="09:20"></div>
+                        <button class="btn btn-outline" style="margin-top: 25px;" onclick="salvarTurmaAtual()">Salvar Modificações</button>
                     </div>
-                    <div class="room-object">
-                        <svg viewBox="0 0 24 24" id="obj-leaf"><path d="M17 2H7c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-5 16c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
-                        <span class="object-caption">Folha</span>
+
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">tablet_mac</span> Integração com Aplicativo</h3>
+                        <div class="flex-row">
+                            <button class="btn btn-primary" onclick="exportarJsonTurma()"><span class="material-icons">send_to_mobile</span> Pacote (WPP)</button>
+                            <button class="btn btn-outline" onclick="enviarApresentacao()"><span class="material-icons">campaign</span> Apresentação</button>
+                        </div>
                     </div>
                 </div>
+
+                <div>
+                    <div class="panel" style="margin-bottom: 20px;">
+                        <h3 class="panel-title"><span class="material-icons">people</span> Relação de Alunos</h3>
+                        <div style="display:flex; gap:10px; margin-bottom: 15px;">
+                            <input type="text" id="new-student-raw" class="custom-input" placeholder="Ex: João - Van 1, Maria...">
+                            <button class="btn btn-primary" style="width:50px; margin:0;" onclick="addStudentToClass()"><span class="material-icons">add</span></button>
+                        </div>
+                        <div id="class-students-visual-list" class="list-container"></div>
+                    </div>
+
+                    <div class="panel" style="margin-bottom: 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--bg); padding-bottom: 15px; margin-bottom: 15px;">
+                            <h3 class="panel-title" style="border:none; padding:0; margin:0;"><span class="material-icons">running_with_errors</span> Alertas de Evasão (Fugas)</h3>
+                        </div>
+                        <div class="flex-row" style="margin-bottom: 15px;">
+                            <div class="input-group" style="margin-bottom:0;"><label>Data Inicial</label><input type="date" id="evasao-start" onchange="renderEvasaoList()"></div>
+                            <div class="input-group" style="margin-bottom:0;"><label>Data Final</label><input type="date" id="evasao-end" onchange="renderEvasaoList()"></div>
+                        </div>
+                        <div id="evasao-list-container" class="list-container" style="max-height: 200px;"></div>
+                    </div>
+
+                    <div class="panel">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--bg); padding-bottom: 15px; margin-bottom: 20px;">
+                            <h3 class="panel-title" style="border:none; padding:0; margin:0;"><span class="material-icons">analytics</span> Extrato de Indisciplina</h3>
+                            <button class="btn btn-outline" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem;" onclick="abrirModalDiarioClass()"><span class="material-icons" style="font-size:1rem;">post_add</span> Lançar Frequência</button>
+                        </div>
+                        <div id="class-dashboard-area" style="display:none;">
+                            <div class="dash-stats" id="dash-cards-turma" style="gap:10px;"></div>
+                        </div>
+                        <div id="history-timeline-container" class="list-container" style="max-height: 350px;"></div>
+                        <div class="flex-row" style="margin-top: 15px;">
+                            <button class="btn btn-outline" onclick="copiarRelatorioText()"><span class="material-icons">content_copy</span> Resumo Texto</button>
+                            <button class="btn btn-primary" onclick="abrirModalPdfTurma()"><span class="material-icons">picture_as_pdf</span> Documento PDF</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="control-panel">
-                <span class="control-title">Luz de Projeção</span>
-                <div class="btn-row">
-                    <button class="toggle-btn active" id="btn-light-white" onclick="setRoomLight('white')">Branca</button>
-                    <button class="toggle-btn" id="btn-light-red" onclick="setRoomLight('red')">Vermelha</button>
-                    <button class="toggle-btn" id="btn-light-green" onclick="setRoomLight('green')">Verde</button>
-                    <button class="toggle-btn" id="btn-light-blue" onclick="setRoomLight('blue')">Azul</button>
+        </div>
+
+        <div id="screen-transports" class="screen">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
+                <h2 style="margin:0; font-size:1.4rem;">Gestão de Frota</h2>
+                <button class="btn btn-primary" style="width:auto; margin:0;" onclick="abrirModalAddTransport()"><span class="material-icons">add</span> Novo Veículo</button>
+            </div>
+            <div id="transports-grid" class="grid-cards"></div>
+        </div>
+
+        <div id="screen-transport-detail" class="screen">
+            <div class="split-view">
+                <div>
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">directions_bus</span> Ficha do Veículo</h3>
+                        <div class="flex-row">
+                            <div class="input-group"><label>Identificador de Rota</label><input type="text" id="trans-name" class="input-readonly" disabled></div>
+                            <div class="input-group"><label>Turno</label><input type="text" id="trans-turno" class="input-readonly" disabled></div>
+                        </div>
+                        <div class="flex-row">
+                            <div class="input-group"><label>Responsável / Monitor</label><input type="text" id="trans-monitor"></div>
+                            <div class="input-group"><label>WhatsApp</label><input type="tel" id="trans-wpp" placeholder="DDD + Número"></div>
+                        </div>
+                        <button class="btn btn-outline" onclick="salvarTransporteAtual()">Salvar Alterações</button>
+                    </div>
+
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">person_add</span> Inclusões Manuais</h3>
+                        <div style="display:flex; gap:10px; margin-bottom: 15px;">
+                            <input type="text" id="new-trans-student-raw" class="custom-input" placeholder="Ex: Visitante 1, Aluno X...">
+                            <button class="btn btn-primary" style="width:50px; margin:0;" onclick="addManualStudentToTrans()"><span class="material-icons">add</span></button>
+                        </div>
+                        <div id="trans-students-visual-list" class="list-container"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">playlist_add_check</span> Manifestos de Passageiros</h3>
+                        <div id="trans-linked-students-list" class="list-container" style="max-height: 400px; margin-bottom: 20px;"></div>
+                        <div class="flex-row" style="border-top: 1px solid var(--border); padding-top:20px;">
+                            <button class="btn btn-primary" onclick="exportarJsonTransporte()"><span class="material-icons">send_to_mobile</span> Enviar Rota (WPP)</button>
+                            <button class="btn btn-outline" onclick="gerarPdfTransporte()"><span class="material-icons">print</span> Imprimir Lista PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-archived" class="screen">
+            <h2 style="margin:0 0 20px 0; font-size:1.4rem; color: var(--text-muted);">Arquivo Histórico</h2>
+            <div id="archived-grid" class="grid-cards"></div>
+        </div>
+
+        <div id="screen-audit" class="screen">
+            <h2 style="margin:0 0 20px 0; font-size:1.4rem;">Auditoria de Arquivos Anuais</h2>
+            <div class="panel" style="max-width: 600px;">
+                <p style="font-size:0.9rem; color:var(--text-muted); margin-top:0;">Pesquise na nuvem pelo ano letivo para resgatar turmas arquivadas no Drive da instituição.</p>
+                <div class="flex-row" style="align-items:flex-end; gap:15px;">
+                    <div class="input-group" style="margin-bottom:0; flex:1;">
+                        <label>Ano Letivo</label>
+                        <input type="number" id="audit-year" value="2026" style="width:100%;">
+                    </div>
+                    <div style="flex:2;">
+                        <button class="btn btn-primary" style="margin-bottom:0; width:100%;" onclick="buscarAuditoriaNuvem()"><span class="material-icons">cloud_sync</span> Buscar na Nuvem</button>
+                    </div>
+                </div>
+            </div>
+            <div id="audit-results" class="grid-cards"></div>
+        </div>
+
+        <div id="screen-settings" class="screen">
+            <div class="split-view">
+                <div>
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">admin_panel_settings</span> Padrões do Sistema</h3>
+                        <div class="limit-row"><span>Limite Simultâneo de Saídas</span><div class="stepper"><button onclick="changeLimitVal('univ-max-out', -1)">-</button><input type="number" id="univ-max-out" value="1"><button onclick="changeLimitVal('univ-max-out', 1)">+</button></div></div>
+                        <div class="limit-row"><span>Passe: Banheiro</span><div class="stepper"><button onclick="changeLimitVal('univ-lim-banheiro', -1)">-</button><input type="number" id="univ-lim-banheiro" value="2"><button onclick="changeLimitVal('univ-lim-banheiro', 1)">+</button></div></div>
+                        <div class="limit-row"><span>Passe: Água</span><div class="stepper"><button onclick="changeLimitVal('univ-lim-agua', -1)">-</button><input type="number" id="univ-lim-agua" value="2"><button onclick="changeLimitVal('univ-lim-agua', 1)">+</button></div></div>
+                        <div class="limit-row" style="border:none;"><span>Passe: Externo</span><div class="stepper"><button onclick="changeLimitVal('univ-lim-externo', -1)">-</button><input type="number" id="univ-lim-externo" value="1"><button onclick="changeLimitVal('univ-lim-externo', 1)">+</button></div></div>
+                    </div>
+
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">forum</span> Comunicação e Design</h3>
+                        <div class="input-group"><label>Mensagem Base (Pitch de Envio)</label><textarea id="config-pitch" style="height: 100px; resize:none;"></textarea></div>
+                        <div class="flex-row">
+                            <div class="input-group" style="flex:2;"><label>Link do App (.APK)</label><input type="url" id="config-apk-link"></div>
+                            <div class="input-group" style="flex:1;">
+                                <label>Cor Primária</label>
+                                <div style="display:flex; align-items:center; gap:10px; background:#fafbfc; border: 1px solid var(--border); padding: 5px; border-radius: 8px;">
+                                    <input type="color" id="theme-color-picker" style="width:36px; height:36px; padding:0; border:none; border-radius:4px; cursor:pointer;" oninput="aplicarTema(this.value)">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="salvarConfiguracoesUniversais()"><span class="material-icons">save</span> Salvar Preferências Gerais</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="panel" style="border-left: 4px solid var(--primary);">
+                        <h3 class="panel-title" style="border:none; margin-bottom: 5px;"><span class="material-icons">cloud</span> Infraestrutura em Nuvem</h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0; margin-bottom: 15px;">Conecte este painel ao motor backend no Google Drive para habilitar sincronização e auditoria remota.</p>
+                        <div class="input-group">
+                            <label>URL da Nuvem (Google Web App API)</label>
+                            <input type="url" id="config-nuvem-url" placeholder="https://script.google.com/macros/s/.../exec">
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">contact_phone</span> Equipe de Coordenação</h3>
+                        <div class="flex-row" style="margin-bottom: 15px;">
+                            <input type="text" id="new-mgr-name" class="custom-input" placeholder="Nome do Gestor">
+                            <input type="tel" id="new-mgr-wpp" class="custom-input" placeholder="WhatsApp">
+                            <button class="btn btn-primary" style="width:auto; margin:0;" onclick="addManager()"><span class="material-icons">add</span></button>
+                        </div>
+                        <div id="managers-list" class="list-container"></div>
+                    </div>
+
+                    <div class="panel">
+                        <h3 class="panel-title"><span class="material-icons">storage</span> Banco de Dados</h3>
+                        <div class="flex-row" style="margin-bottom: 15px;">
+                            <button class="btn btn-primary" onclick="abrirModalExportBackup()"><span class="material-icons">cloud_upload</span> Backup de Segurança</button>
+                            <button class="btn btn-outline" onclick="abrirModalRestaurarBackup()"><span class="material-icons">settings_backup_restore</span> Restaurar Sistema</button>
+                        </div>
+                        <button class="btn btn-danger" style="margin-top:20px;" onclick="confirmarResetGeral()"><span class="material-icons">warning</span> Apagar Toda a Escola (Reset)</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="view-addition" class="view">
-        <div class="lab-container">
-            <div class="canvas-area" style="background-color: #000;">
-                <div class="blend-view">
-                    <div class="light-circle" id="circle-red"></div>
-                    <div class="light-circle" id="circle-green"></div>
-                    <div class="light-circle" id="circle-blue"></div>
-                </div>
+<!-- MODAIS GERAIS -->
+<div id="modal-add-turma" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Cadastrar Turma</h2><span class="icon-action material-icons" onclick="fecharModais()">close</span></div>
+        <div class="input-group"><label>Identificador (Ex: A, B, CM)</label><input type="text" id="add-turma-nome" placeholder="Letra/Sufixo"></div>
+        <div class="flex-row">
+            <div class="input-group">
+                <label>Segmento</label>
+                <select id="add-turma-segmento">
+                    <option value="Educação Infantil">Educação Infantil</option>
+                    <option value="Ensino Fundamental">Ensino Fundamental</option>
+                    <option value="Ensino Médio">Ensino Médio</option>
+                </select>
             </div>
-            <div class="control-panel">
-                <span class="control-title">Controles (RGB)</span>
-                <div class="slider-group">
-                    <div class="slider-row"><span class="slider-label" style="color:#ff3333;">R</span><input type="range" id="slide-r" class="range-input" min="0" max="255" value="255" oninput="updateAdditiveMixing()"></div>
-                    <div class="slider-row"><span class="slider-label" style="color:#33ff33;">G</span><input type="range" id="slide-g" class="range-input" min="0" max="255" value="255" oninput="updateAdditiveMixing()"></div>
-                    <div class="slider-row"><span class="slider-label" style="color:#3333ff;">B</span><input type="range" id="slide-b" class="range-input" min="0" max="255" value="255" oninput="updateAdditiveMixing()"></div>
-                </div>
+            <div class="input-group">
+                <label>Ano/Série</label>
+                <select id="add-turma-ano">
+                    <option value="Infantil 1">Infantil 1</option><option value="Infantil 2">Infantil 2</option><option value="Infantil 3">Infantil 3</option><option value="Infantil 4">Infantil 4</option><option value="Infantil 5">Infantil 5</option>
+                    <option value="1º Ano">1º Ano</option><option value="2º Ano">2º Ano</option><option value="3º Ano">3º Ano</option><option value="4º Ano">4º Ano</option><option value="5º Ano">5º Ano</option>
+                    <option value="6º Ano">6º Ano</option><option value="7º Ano">7º Ano</option><option value="8º Ano">8º Ano</option><option value="9º Ano">9º Ano</option>
+                    <option value="1ª Série">1ª Série (Médio)</option><option value="2ª Série">2ª Série (Médio)</option><option value="3ª Série">3ª Série (Médio)</option>
+                </select>
             </div>
         </div>
-    </div>
-
-    <div id="info-modal" class="modal-overlay" onclick="handleOverlayClick(event)">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3 id="info-modal-title" class="modal-title">Instruções</h3>
-                <button class="modal-close" onclick="closeModal('info-modal')"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
-            </div>
-            <div id="info-modal-body" class="modal-body"></div>
+        <div class="input-group">
+            <label>Turno</label>
+            <select id="add-turma-turno"><option value="Matutino">Matutino</option><option value="Vespertino">Vespertino</option><option value="Integral">Integral</option></select>
+        </div>
+        <div class="flex-row">
+            <div class="input-group"><label>Professor Resp.</label><input type="text" id="add-turma-prof"></div>
+            <div class="input-group"><label>WhatsApp</label><input type="tel" id="add-turma-wpp"></div>
+        </div>
+        <div class="flex-row" style="margin-top: 10px;">
+            <button class="btn btn-outline" onclick="fecharModais()">Cancelar</button>
+            <button class="btn btn-primary" onclick="criarNovaTurma()">Criar Turma</button>
         </div>
     </div>
+</div>
 
-    <script>
-        var currentView = 'menu';
+<div id="modal-add-transport" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Novo Veículo / Rota</h2><span class="icon-action material-icons" onclick="fecharModais()">close</span></div>
+        <div class="input-group">
+            <label>Identificador Detectado nas Turmas</label>
+            <select id="add-trans-select" style="margin-bottom: 5px;"></select>
+            <div class="toggle-container" style="padding:10px; margin-bottom:5px;">
+                <span class="toggle-label" style="font-size:0.8rem;">Digitar Novo Identificador Manualmente</span>
+                <label class="switch" style="transform:scale(0.8);"><input type="checkbox" id="add-trans-toggle" onchange="toggleTransManual()"><span class="slider"></span></label>
+            </div>
+            <input type="text" id="add-trans-manual" placeholder="Ex: Ônibus 3" style="display:none;" class="custom-input">
+        </div>
+        <div class="input-group">
+            <label>Turno de Operação</label>
+            <select id="add-trans-turno"><option value="Matutino">Matutino</option><option value="Vespertino">Vespertino</option><option value="Integral">Integral / Misto</option></select>
+        </div>
+        <div class="flex-row">
+            <div class="input-group"><label>Monitor</label><input type="text" id="add-trans-monitor"></div>
+            <div class="input-group"><label>WhatsApp</label><input type="tel" id="add-trans-wpp"></div>
+        </div>
+        <div class="flex-row" style="margin-top: 10px;">
+            <button class="btn btn-outline" onclick="fecharModais()">Cancelar</button>
+            <button class="btn btn-primary" onclick="criarNovoTransporte()">Registrar</button>
+        </div>
+    </div>
+</div>
 
-        var infoTexts = {
-            'menu': { title: 'Laboratório de Óptica', body: '<p>Explore os laboratórios para testar propriedades da luz.</p>' },
-            'decomposition': { title: 'Decomposição', body: '<p>Ajuste o ângulo para quebrar a luz branca no espectro.</p>' },
-            'reflection': { title: 'Reflexão (Fases)', body: '<p>O ângulo de incidência é igual ao de reflexão. Resolva os labirintos usando espelhos para levar o laser até o alvo.</p>' },
-            'transmission': { title: 'Transmissão', body: '<p>Filtros bloqueiam outras cores. Dois filtros diferentes cruzados bloqueiam tudo.</p>' },
-            'absorption': { title: 'Absorção', body: '<p>Se um objeto vermelho receber luz azul, ele não terá vermelho para refletir e ficará preto.</p>' },
-            'addition': { title: 'Aditiva', body: '<p>Misturar luz é diferente de misturar tinta. RGB máximo = Branco.</p>' }
-        };
+<!-- MODAIS DE BANCO DE DADOS E RELATÓRIOS -->
+<div id="modal-upload-global" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
+    <div class="modal-content">
+        <div class="modal-header"><h2><span class="material-icons" style="color:var(--primary);">upload_file</span> Processar Frequências</h2><span class="icon-action material-icons" onclick="fecharModais()">close</span></div>
+        <button class="btn btn-outline" style="border-color:var(--primary); color:var(--primary); margin-bottom:15px; width:100%;" onclick="sincronizarNuvem()"><span class="material-icons">cloud_sync</span> Sincronizar Todas as Turmas (Nuvem)</button>
+        <div class="input-group"><label>Ou cole o pacote manualmente:</label><textarea id="input-upload-global" style="height:120px; font-family:monospace; font-size:0.8rem; border:1px solid var(--border);"></textarea></div>
+        <div class="input-group"><label>Destino do Arquivamento (Turma)</label><select id="select-turma-global"></select></div>
+        <div class="flex-row" style="margin-top: 10px;">
+            <button class="btn btn-outline" onclick="fecharModais()">Cancelar</button>
+            <button class="btn btn-primary" onclick="processarUploadGlobal()">Extrair Manual</button>
+        </div>
+    </div>
+</div>
 
-        function handleAndroidBack() {
-            var activeModal = document.getElementById('info-modal');
-            if (activeModal.classList.contains('active')) { closeModal('info-modal'); return; }
-            if (currentView !== 'menu') { switchView('menu'); return; }
-            if (window.AppInventor && window.AppInventor.setWebViewString) { window.AppInventor.setWebViewString("FECHAR_APP"); }
+<div id="modal-diario-class" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Lançamento Rápido</h2><span class="icon-action material-icons" onclick="fecharModais()">close</span></div>
+        <button class="btn btn-outline" style="border-color:var(--primary); color:var(--primary); margin-bottom:15px; width:100%;" onclick="sincronizarNuvem()"><span class="material-icons">cloud_sync</span> Sincronizar Frequências da Nuvem</button>
+        <div class="input-group"><label>Ou cole os dados manualmente:</label><textarea id="import-diario-class" style="height:120px; font-family:monospace; font-size:0.8rem; border:1px solid var(--border);"></textarea></div>
+        <div class="flex-row" style="margin-top: 10px;">
+            <button class="btn btn-outline" onclick="fecharModais()">Cancelar</button>
+            <button class="btn btn-primary" onclick="processarDiarioTurma()">Processar Manual</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-export-backup" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
+    <div class="modal-content">
+        <div class="modal-header"><h2><span class="material-icons" style="color:var(--primary);">cloud_upload</span> Exportar Backup</h2><span class="icon-action material-icons" onclick="fecharModais()">close</span></div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <button class="btn btn-outline" onclick="copiarBackupGeral()"><span class="material-icons">content_copy</span> Copiar Dados</button>
+            <button class="btn" style="background:#25D366; color:white; justify-content:center;" onclick="enviarBackupWpp()"><span class="material-icons">share</span> Enviar via WhatsApp</button>
+            <button class="btn btn-outline" style="border-color:var(--primary); color:var(--primary);" onclick="salvarBackupNuvem()"><span class="material-icons">cloud</span> Salvar na Nuvem (Drive)</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-restaurar-backup" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Restaurar Sistema</h2><span class="icon-action material-icons" onclick="fecharModais()">close</span></div>
+        <p style="font-size:0.85rem; color:var(--danger); font-weight:bold; margin-top:-10px;">ATENÇÃO: Este processo apaga e substitui as informações atuais.</p>
+        <button class="btn btn-outline" style="border-color:var(--primary); color:var(--primary); margin-bottom:15px; width:100%;" onclick="restaurarDaNuvem()"><span class="material-icons">cloud_download</span> Buscar da Nuvem (Drive)</button>
+        <div class="input-group"><label>Ou cole os dados manualmente:</label><textarea id="input-backup-json" style="height:120px; font-family:monospace; font-size:0.8rem; border:1px solid var(--border);"></textarea></div>
+        <div class="flex-row" style="margin-top: 10px;">
+            <button class="btn btn-outline" onclick="fecharModais()">Cancelar</button>
+            <button class="btn btn-primary" onclick="restaurarBackupGeral()">Restaurar Manual</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-pdf-filter" class="modal-overlay" onclick="if(event.target === this) fecharModais()">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Extrair Relatório (PDF)</h2><span class="icon-action material-icons" onclick="fecharModais()">close</span></div>
+        <div class="flex-row">
+            <div class="input-group"><label>Data Inicial</label><select id="pdf-start-date"></select></div>
+            <div class="input-group"><label>Data Final</label><select id="pdf-end-date"></select></div>
+        </div>
+        <div class="flex-row" style="margin-top: 10px;">
+            <button class="btn btn-outline" onclick="fecharModais()">Cancelar</button>
+            <button class="btn btn-primary" onclick="gerarPdfTurmaFiltrado()"><span class="material-icons">print</span> Gerar Documento</button>
+        </div>
+    </div>
+</div>
+
+<div id="custom-dialog" class="modal-overlay" style="z-index: 300;">
+    <div class="modal-content" style="max-width: 320px; text-align: center; padding: 30px;">
+        <span class="material-icons" id="dialog-icon" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 15px; display:block;">info</span>
+        <h3 id="dialog-title" style="margin: 0 0 10px 0; color:var(--text-main);">Aviso</h3>
+        <p id="dialog-message" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5;"></p>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button id="dialog-btn-cancel" class="btn btn-outline" style="margin:0; flex:1; display:none;" onclick="fecharDialogo()">Cancelar</button>
+            <button id="dialog-btn-confirm" class="btn btn-primary" style="margin:0; flex:1;">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast">Mensagem</div>
+<textarea id="clipboard-area" style="position: absolute; left: -9999px;"></textarea>
+
+<!-- ÁREA DE IMPRESSÃO PDF -->
+<div id="print-area"></div>
+
+<script>
+    document.addEventListener('keydown', function(event) { if (event.key === "Escape") fecharModais(); });
+
+    var DEFAULT_CONFIG = {
+        themeHex: '#38cde0', universalLimits: { banheiro: 2, agua: 2, externo: 1 }, maxOut: 1,
+        pitchMsg: "Olá [PROF], tudo bem?\n\nSegue o pacote de dados e o link do aplicativo configurado para a turma [TURMA].",
+        apkLink: "https://", nuvemUrl: "", managers: []
+    };
+
+    var db;
+    try { 
+        db = JSON.parse(localStorage.getItem('slgestao_db')); 
+        if(typeof db !== 'object' || db === null) db = {};
+    } catch(e) { db = {}; }
+    
+    if (!db.classes || !Array.isArray(db.classes)) db.classes = [];
+    if (!db.transports || !Array.isArray(db.transports)) db.transports = [];
+    if (!db.config || typeof db.config !== 'object') db.config = {};
+    
+    db.classes = db.classes.filter(function(c) { return c && typeof c === 'object'; });
+    db.transports = db.transports.filter(function(t) { return t && typeof t === 'object'; });
+    db.config = Object.assign({}, DEFAULT_CONFIG, db.config);
+    if (!Array.isArray(db.config.managers)) db.config.managers = [];
+
+    db.classes.forEach(function(c) { 
+        if(!Array.isArray(c.evolution)) c.evolution = []; 
+        if(!Array.isArray(c.students)) c.students = []; 
+        if(!c.breakTime) c.breakTime = '09:20';
+        if(!c.turno) c.turno = 'Matutino';
+        if(!c.segmento) c.segmento = 'Ensino Fundamental';
+        if(typeof c.archived === 'undefined') c.archived = false;
+    });
+
+    db.transports.forEach(function(t) { if(!t.turno) t.turno = 'Matutino'; });
+
+    var currentClassId = null, currentTransId = null;
+    var dialogCallback = null;
+    var homeCurrentTab = 'dashboard';
+    
+    var historyCurrentPage = 1;
+    var historyPerPage = 10;
+
+    var classInitialState = "";
+    var transInitialState = "";
+    var pendingNavTarget = null;
+
+    function escurecerCor(hex, lum) { hex = String(hex).replace(/[^0-9a-f]/gi, ''); if (hex.length < 6) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2]; var rgb = "#", c, i; for (i = 0; i < 3; i++) { c = parseInt(hex.substr(i*2,2), 16); c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16); rgb += ("00"+c).substr(c.length); } return rgb; }
+    function aplicarTema(hex) {
+        if(!hex) hex = '#38cde0'; var root = document.documentElement; 
+        root.style.setProperty('--primary', hex); root.style.setProperty('--primary-dark', escurecerCor(hex, -0.2)); root.style.setProperty('--primary-light', hex + '1A');
+        var metaTheme = document.getElementById('meta-theme-color'); if (metaTheme) metaTheme.setAttribute('content', hex);
+    }
+
+    function init() { 
+        aplicarTema(db.config.themeHex); 
+        navTo('dashboard', true); 
+        // Sincronização automática e invisível (Silent) ao abrir
+        if(db.config.nuvemUrl) sincronizarNuvem(true);
+    }
+    
+    function save() { localStorage.setItem('slgestao_db', JSON.stringify(db)); }
+    function changeLimitVal(id, delta) { var el = document.getElementById(id); var val = parseInt(el.value) || 0; val += delta; var min = parseInt(el.min) || 0; var max = parseInt(el.max) || 99; if(val < min) val = min; if(val > max) val = max; el.value = val; }
+
+    function getClassFormState() {
+        return JSON.stringify({
+            prof: document.getElementById('class-prof').value,
+            wpp: document.getElementById('class-wpp').value,
+            status: document.getElementById('class-status').value,
+            useUniv: document.getElementById('class-use-universal').checked,
+            break: document.getElementById('class-break-time').value,
+            maxOut: document.getElementById('class-max-out').value,
+            limB: document.getElementById('class-lim-banheiro').value,
+            limA: document.getElementById('class-lim-agua').value,
+            limE: document.getElementById('class-lim-externo').value
+        });
+    }
+
+    function getTransFormState() {
+        return JSON.stringify({
+            monitor: document.getElementById('trans-monitor').value,
+            wpp: document.getElementById('trans-wpp').value
+        });
+    }
+
+    function updateSidebarActive(id) {
+        var items = document.querySelectorAll('.menu-item');
+        for(var i=0; i<items.length; i++) items[i].classList.remove('active');
+        var tgt = document.getElementById('nav-' + id);
+        if(tgt) tgt.classList.add('active');
+    }
+
+    function confirmPendingNav() {
+        if(pendingNavTarget) navTo(pendingNavTarget, true);
+        pendingNavTarget = null;
+    }
+
+    function navTo(screenId, force = false) {
+        var activeScreen = document.querySelector('.screen.active');
+        
+        if (!force && activeScreen) {
+            if (activeScreen.id === 'screen-class-detail' && getClassFormState() !== classInitialState) {
+                pendingNavTarget = screenId;
+                customConfirm("Existem alterações não salvas na turma. Deseja sair e perder as edições?", confirmPendingNav, "Atenção", true, "SAIR SEM SALVAR");
+                return;
+            }
+            if (activeScreen.id === 'screen-transport-detail' && getTransFormState() !== transInitialState) {
+                pendingNavTarget = screenId;
+                customConfirm("Existem alterações não salvas no veículo. Deseja sair e perder as edições?", confirmPendingNav, "Atenção", true, "SAIR SEM SALVAR");
+                return;
+            }
         }
 
-        function receberTextoDoKodular(texto) {}
+        var screens = document.querySelectorAll('.screen');
+        for(var i=0; i<screens.length; i++) screens[i].classList.remove('active');
+        var title = document.getElementById('header-title'), btnBack = document.getElementById('btn-back'), topActions = document.getElementById('topbar-actions');
+        
+        document.getElementById('screen-' + screenId).classList.add('active');
+        document.getElementById('sidebar').classList.remove('open');
 
-        function switchView(viewId) {
-            var views = document.querySelectorAll('.view');
-            for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
-            document.getElementById('view-' + viewId).classList.add('active');
-            document.getElementById('app-title').innerText = viewId === 'menu' ? "Laboratório" : infoTexts[viewId].title;
-            document.getElementById('back-btn').className = viewId === 'menu' ? "nav-btn hidden" : "nav-btn";
-            currentView = viewId;
-            if (viewId !== 'menu') setTimeout(function(){ initLabMechanics(viewId); }, 50);
+        topActions.style.display = 'flex';
+        btnBack.style.display = 'none';
+
+        if(screenId === 'dashboard') { title.innerText = "Painel Geral"; updateSidebarActive('dashboard'); homeCurrentTab = 'dashboard'; currentClassId = null; currentTransId = null; renderDashboard();
+        } else if (screenId === 'classes') { title.innerText = "Turmas Ativas"; updateSidebarActive('classes'); homeCurrentTab = 'classes'; currentClassId = null; currentTransId = null; renderHome();
+        } else if (screenId === 'transports') { title.innerText = "Transportes / Frota"; updateSidebarActive('transports'); homeCurrentTab = 'transports'; currentClassId = null; currentTransId = null; renderHome();
+        } else if (screenId === 'archived') { title.innerText = "Arquivo Morto"; updateSidebarActive('archived'); homeCurrentTab = 'archived'; currentClassId = null; currentTransId = null; renderHome();
+        } else if (screenId === 'audit') { title.innerText = "Auditoria"; updateSidebarActive('audit'); topActions.style.display = 'none';
+        } else if (screenId === 'settings') { title.innerText = "Sistema e Regras"; updateSidebarActive('settings'); topActions.style.display = 'none'; loadUniversalSettings();
+        } else if (screenId === 'class-detail') { var cls = db.classes.find(function(c){ return c.id === currentClassId; }); title.innerText = "Turma: " + cls.className; btnBack.style.display = 'flex'; topActions.style.display = 'none'; loadClassData(cls);
+        } else if (screenId === 'transport-detail') { var trans = db.transports.find(function(t){ return t.id === currentTransId; }); title.innerText = "Veículo: " + trans.name; btnBack.style.display = 'flex'; topActions.style.display = 'none'; loadTransData(trans); }
+    }
+
+    function handleBackNavigation() {
+        var activeScreen = document.querySelector('.screen.active').id;
+        if (activeScreen === 'screen-class-detail') navTo('classes');
+        else if (activeScreen === 'screen-transport-detail') navTo('transports');
+        else if (activeScreen === 'screen-audit') navTo('dashboard');
+        else { if (window.AppInventor) window.AppInventor.setWebViewString("VOLTAR_MENU"); }
+    }
+
+    window.receberTextoDoKodular = function(texto) {};
+    function handleAndroidBack() { var modals = document.querySelectorAll('.modal-overlay'); var aberto = false; for(var i=0; i<modals.length; i++){ if (modals[i].style.display === 'flex') { modals[i].style.display = 'none'; aberto = true; } } if (!aberto) handleBackNavigation(); }
+
+    function toast(msg) { var t = document.getElementById('toast'); t.innerText = msg; t.className = "show"; setTimeout(function(){ t.className = ""; }, 3000); }
+    function fecharModais() { var m = document.querySelectorAll('.modal-overlay'); for(var i=0; i<m.length; i++) { m[i].style.display = 'none'; } }
+    
+    function customAlert(msg, title) { 
+        document.getElementById('dialog-title').innerText = title || "Aviso"; 
+        document.getElementById('dialog-icon').innerText = "info"; document.getElementById('dialog-icon').style.color = "var(--primary)";
+        document.getElementById('dialog-message').innerText = msg; document.getElementById('dialog-btn-cancel').style.display = 'none'; 
+        document.getElementById('dialog-btn-confirm').className = "btn btn-primary"; document.getElementById('dialog-btn-confirm').onclick = fecharDialogo; 
+        document.getElementById('custom-dialog').style.display = 'flex'; 
+    }
+    
+    function customConfirm(msg, onConfirm, title, isDanger, confirmText) { 
+        document.getElementById('dialog-title').innerText = title || "Atenção"; 
+        document.getElementById('dialog-icon').innerText = isDanger ? "warning" : "help_outline"; document.getElementById('dialog-icon').style.color = isDanger ? "var(--danger)" : "var(--primary)";
+        document.getElementById('dialog-message').innerText = msg; document.getElementById('dialog-btn-cancel').style.display = 'block'; 
+        var btnOk = document.getElementById('dialog-btn-confirm'); btnOk.innerText = confirmText || "CONFIRMAR"; btnOk.className = isDanger ? "btn btn-danger" : "btn btn-primary"; 
+        dialogCallback = onConfirm; btnOk.onclick = function() { if(dialogCallback) dialogCallback(); fecharDialogo(); }; 
+        document.getElementById('custom-dialog').style.display = 'flex'; 
+    }
+    function fecharDialogo() { document.getElementById('custom-dialog').style.display = 'none'; dialogCallback = null; }
+
+    function getStatusInfo(status) {
+        if(status === 'stable') return { label: 'Estável', bgClass: 'bg-stable', icon: 'check_circle' };
+        if(status === 'unstable') return { label: 'Atenção', bgClass: 'bg-unstable', icon: 'warning' };
+        return { label: 'Aguardando', bgClass: 'bg-none', icon: 'hourglass_empty' };
+    }
+
+    function renderHome() {
+        if (homeCurrentTab === 'classes') {
+            var container = document.getElementById('classes-grid');
+            var activeClasses = db.classes.filter(function(c) { return !c.archived; });
+            if(activeClasses.length === 0) { container.innerHTML = '<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--text-muted);">Nenhuma turma em operação.</div>'; return; }
+            var clsSorted = activeClasses.slice().sort(function(a,b) { return (a.className || '').localeCompare(b.className || ''); });
+            container.innerHTML = clsSorted.map(function(cls) {
+                var st = getStatusInfo(cls.status); var qtd = cls.students ? cls.students.length : 0;
+                return '<div class="card" onclick="currentClassId='+cls.id+'; navTo(\'class-detail\');"><div class="card-header" style="border-bottom:none; padding-bottom:15px;"><div style="flex:1;"><div class="card-title">'+cls.className+'</div><div class="card-subtitle"><span class="material-icons" style="font-size:1rem;">person</span> '+cls.profName+' <small style="color:var(--text-muted); margin-left:5px;">('+cls.turno+' - '+cls.segmento+')</small></div></div></div><div class="card-band '+st.bgClass+'"><span>'+qtd+' ALUNOS</span><span style="display:flex; align-items:center; gap:5px;"><span class="material-icons" style="font-size:1.1rem;">'+st.icon+'</span>'+st.label+'</span></div><div class="card-footer"><button class="icon-action" onclick="event.stopPropagation(); arquivarTurma('+cls.id+')" title="Arquivar"><span class="material-icons">archive</span></button><button class="btn btn-outline" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem;" onclick="event.stopPropagation(); fastExportJson('+cls.id+')">Pacote (WPP)</button></div></div>';
+            }).join('');
+        } else if (homeCurrentTab === 'transports') {
+            var container2 = document.getElementById('transports-grid');
+            if(db.transports.length === 0) { container2.innerHTML = '<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--text-muted);">Nenhum transporte gerenciado.</div>'; return; }
+            var transSorted = db.transports.slice().sort(function(a,b) { return (a.name || '').localeCompare(b.name || ''); });
+            container2.innerHTML = transSorted.map(function(t) {
+                return '<div class="card transport" onclick="currentTransId='+t.id+'; navTo(\'transport-detail\');"><div class="card-header" style="border-bottom:none; padding-bottom:15px;"><div style="flex:1;"><div class="card-title">'+t.name+'</div><div class="card-subtitle"><span class="material-icons" style="font-size:1rem;">badge</span> '+t.monitorName+' <small style="color:var(--text-muted); margin-left:5px;">('+(t.turno||'Matutino')+')</small></div></div></div><div class="card-band bg-none"><span>ROTA ATIVA</span><span style="display:flex; align-items:center; gap:5px;"><span class="material-icons" style="font-size:1.1rem;">directions_bus</span>Veículo</span></div><div class="card-footer"><button class="icon-action" style="color:var(--danger);" onclick="event.stopPropagation(); deleteTransport('+t.id+')" title="Excluir"><span class="material-icons">delete</span></button><button class="btn btn-outline" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem;" onclick="event.stopPropagation(); exportarJsonTransporteRapido('+t.id+')">Rota (WPP)</button></div></div>';
+            }).join('');
+        } else if (homeCurrentTab === 'archived') {
+            var container3 = document.getElementById('archived-grid');
+            var archClasses = db.classes.filter(function(c) { return c.archived; });
+            if(archClasses.length === 0) { container3.innerHTML = '<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--text-muted);">O arquivo histórico está vazio.</div>'; return; }
+            var archSorted = archClasses.slice().sort(function(a,b) { return (a.className || '').localeCompare(b.className || ''); });
+            container3.innerHTML = archSorted.map(function(cls) {
+                return '<div class="card archived" style="opacity:0.75;"><div class="card-header" style="border-bottom:none; padding-bottom:15px;"><div style="flex:1;"><div class="card-title" style="color:var(--text-muted);">'+cls.className+'</div><div class="card-subtitle"><span class="material-icons" style="font-size:1rem;">person</span> '+cls.profName+'</div></div></div><div class="card-band bg-none" style="background:#bdc3c7;"><span>ARQUIVADA</span><span style="display:flex; align-items:center; gap:5px;"><span class="material-icons" style="font-size:1.1rem;">inventory_2</span>Inativa</span></div><div class="card-footer"><button class="icon-action" style="color:var(--danger);" onclick="deleteClass('+cls.id+')" title="Excluir Definitivo"><span class="material-icons">delete_forever</span></button><button class="btn btn-outline" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem;" onclick="restaurarTurma('+cls.id+')"><span class="material-icons">unarchive</span> Restaurar</button></div></div>';
+            }).join('');
+        }
+    }
+
+    function abrirModalAddTurma() { document.getElementById('add-turma-nome').value = ''; document.getElementById('add-turma-prof').value = ''; document.getElementById('add-turma-wpp').value = ''; document.getElementById('modal-add-turma').style.display = 'flex'; }
+    function criarNovaTurma() {
+        var ident = document.getElementById('add-turma-nome').value.trim(); var prof = document.getElementById('add-turma-prof').value.trim(); var wpp = document.getElementById('add-turma-wpp').value.replace(/\D/g, ''); 
+        var turno = document.getElementById('add-turma-turno').value;
+        var segmento = document.getElementById('add-turma-segmento').value;
+        var anoSerie = document.getElementById('add-turma-ano').value;
+        
+        var nomeCompleto = anoSerie + (ident ? ' ' + ident : '');
+
+        if(!anoSerie || !prof) return customAlert("As informações da série e professor são obrigatórias.");
+        db.classes.push({ id: Date.now(), className: nomeCompleto, turno: turno, segmento: segmento, profName: prof, wpp: wpp, status: 'none', useUniversal: true, customLimits: { banheiro: 2, agua: 2, externo: 1 }, maxOut: 1, breakTime: '09:20', students: [], evolution: [], archived: false });
+        save(); fecharModais(); renderHome(); toast("Turma cadastrada com sucesso!");
+    }
+    
+    function arquivarTurma(id) { customConfirm("Mover esta turma para os arquivos? Ela sairá do painel principal.", function() { var cls = db.classes.find(function(c) { return c.id === id; }); if(cls) { cls.archived = true; save(); renderHome(); renderDashboard(); toast("Turma arquivada."); } }, "Arquivar Turma", false, "ARQUIVAR"); }
+    function restaurarTurma(id) { var cls = db.classes.find(function(c) { return c.id === id; }); if(cls) { cls.archived = false; save(); renderHome(); renderDashboard(); toast("Turma restaurada."); } }
+    function deleteClass(id) { customConfirm("Excluir PERMANENTEMENTE esta turma e seus registros?", function() { db.classes = db.classes.filter(function(c){ return c.id !== id;}); save(); renderHome(); renderDashboard(); toast("Turma excluída"); }, "Atenção", true, "EXCLUIR"); }
+
+    function getUniqueTransportsFromClasses() { var list = []; db.classes.forEach(function(c) { if(c.students && !c.archived) { c.students.forEach(function(s) { if(s && s.bus && list.indexOf(s.bus) === -1) list.push(s.bus); }); } }); return list.sort(); }
+
+    function abrirModalAddTransport() {
+        var select = document.getElementById('add-trans-select'); var uniques = getUniqueTransportsFromClasses(); select.innerHTML = uniques.map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('');
+        if(uniques.length === 0) { select.innerHTML = '<option value="">(Nenhum detectado)</option>'; document.getElementById('add-trans-toggle').checked = true; toggleTransManual(); } else { document.getElementById('add-trans-toggle').checked = false; toggleTransManual(); }
+        document.getElementById('add-trans-manual').value = ''; document.getElementById('add-trans-monitor').value = ''; document.getElementById('add-trans-wpp').value = ''; document.getElementById('modal-add-transport').style.display = 'flex';
+    }
+
+    function toggleTransManual() { var manual = document.getElementById('add-trans-toggle').checked; document.getElementById('add-trans-select').style.display = manual ? 'none' : 'block'; document.getElementById('add-trans-manual').style.display = manual ? 'block' : 'none'; }
+
+    function criarNovoTransporte() {
+        var isManual = document.getElementById('add-trans-toggle').checked; var nome = isManual ? document.getElementById('add-trans-manual').value.trim() : document.getElementById('add-trans-select').value;
+        var monitor = document.getElementById('add-trans-monitor').value.trim(); var turno = document.getElementById('add-trans-turno').value; var wpp = document.getElementById('add-trans-wpp').value.replace(/\D/g, '');
+        if(!nome || !monitor) return customAlert("Identificador da rota e Monitor são obrigatórios.");
+        db.transports.push({ id: Date.now(), name: nome, turno: turno, monitorName: monitor, wpp: wpp, manualStudents: [] });
+        save(); fecharModais(); renderHome(); toast("Veículo cadastrado!");
+    }
+
+    function deleteTransport(id) { customConfirm("Excluir este veículo?", function() { db.transports = db.transports.filter(function(t){ return t.id !== id; }); save(); renderHome(); toast("Excluído"); }, "Atenção", true, "EXCLUIR"); }
+
+    /* ---------- DETALHE TURMA ---------- */
+    function renderClassStudents() {
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; }); var container = document.getElementById('class-students-visual-list');
+        if(!cls.students || cls.students.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Nenhum aluno cadastrado.</div>'; return; }
+        
+        cls.students.sort(function(a,b){ return a.name.localeCompare(b.name); });
+        
+        var html = '';
+        cls.students.forEach(function(s, idx) { html += '<div class="list-item"><div class="student-info"><strong class="list-item-title">' + s.name + '</strong><span class="list-item-sub">' + (s.bus ? '<span class="material-icons" style="font-size:0.9rem; color:var(--primary);">directions_bus</span> ' + s.bus : 'Sem transporte da escola') + '</span></div><button class="icon-action" onclick="removeStudentFromClass('+idx+')"><span class="material-icons">delete</span></button></div>'; });
+        container.innerHTML = html;
+    }
+
+    function addStudentToClass() {
+        var raw = document.getElementById('new-student-raw').value.trim(); if(!raw) return;
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; }); var parsed = parseStudentsText(raw);
+        if(parsed.length > 0) { if(!cls.students) cls.students = []; cls.students = cls.students.concat(parsed); cls.students.sort(function(a,b){ return a.name.localeCompare(b.name); }); save(); renderClassStudents(); document.getElementById('new-student-raw').value = ''; toast(parsed.length + " aluno(s) incluído(s)!"); classInitialState = getClassFormState(); }
+    }
+
+    function removeStudentFromClass(idx) { var cls = db.classes.find(function(c){ return c.id === currentClassId; }); cls.students.splice(idx, 1); save(); renderClassStudents(); classInitialState = getClassFormState(); }
+
+    function loadClassData(cls) {
+        document.getElementById('class-name').value = cls.className || ''; document.getElementById('class-prof').value = cls.profName || ''; 
+        document.getElementById('class-turno').value = cls.turno || 'Matutino'; document.getElementById('class-segmento').value = cls.segmento || 'Ensino Fundamental';
+        document.getElementById('class-wpp').value = cls.wpp || ''; document.getElementById('class-status').value = cls.status || 'none'; document.getElementById('class-use-universal').checked = cls.useUniversal; document.getElementById('class-break-time').value = cls.breakTime || '09:20';
+        var lims = cls.customLimits || db.config.universalLimits || { banheiro: 2, agua: 2, externo: 1 };
+        document.getElementById('class-max-out').value = cls.maxOut || db.config.maxOut || 1; document.getElementById('class-lim-banheiro').value = lims.banheiro || 0; document.getElementById('class-lim-agua').value = lims.agua || 0; document.getElementById('class-lim-externo').value = lims.externo || 0;
+        
+        document.getElementById('evasao-start').value = ''; document.getElementById('evasao-end').value = '';
+        
+        toggleCustomLimits(); renderClassStudents(); historyCurrentPage = 1; renderHistoryTimeline(); renderClassDashboard(); renderEvasaoList();
+        
+        setTimeout(function(){ classInitialState = getClassFormState(); }, 100);
+    }
+
+    function toggleCustomLimits() { document.getElementById('custom-limits-container').style.display = document.getElementById('class-use-universal').checked ? 'none' : 'block'; }
+    function parseStudentsText(raw) { var students = []; var items = raw.split(/[,;\n]/); items.forEach(function(item) { if(!item.trim()) return; var parts = item.split('-'); var nome = parts[0].trim().toUpperCase(); var bus = parts[1] ? parts[1].trim().toUpperCase() : ""; if(nome) students.push({ name: nome, bus: bus }); }); return students; }
+
+    function salvarTurmaAtual() {
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; });
+        cls.profName = document.getElementById('class-prof').value.trim(); cls.wpp = document.getElementById('class-wpp').value.replace(/\D/g, ''); 
+        cls.status = document.getElementById('class-status').value; cls.useUniversal = document.getElementById('class-use-universal').checked; cls.breakTime = document.getElementById('class-break-time').value || '09:20';
+        if(!cls.useUniversal) { cls.maxOut = parseInt(document.getElementById('class-max-out').value) || 1; cls.customLimits = { banheiro: parseInt(document.getElementById('class-lim-banheiro').value) || 0, agua: parseInt(document.getElementById('class-lim-agua').value) || 0, externo: parseInt(document.getElementById('class-lim-externo').value) || 0 }; }
+        save(); toast("Definições guardadas!"); classInitialState = getClassFormState();
+    }
+
+    /* ---------- FUGAS / EVASÃO LIST ---------- */
+    function renderEvasaoList() {
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; });
+        var container = document.getElementById('evasao-list-container');
+        var startVal = document.getElementById('evasao-start').value;
+        var endVal = document.getElementById('evasao-end').value;
+
+        var evasaoStats = {};
+        if (cls.evolution) {
+            cls.evolution.forEach(function(day) {
+                var dParts = (day.date||day.data).split('/');
+                var objDate = new Date(dParts[2], dParts[1]-1, dParts[0], 12, 0, 0);
+
+                if (startVal) { var sDate = new Date(startVal + "T00:00:00"); if (objDate < sDate) return; }
+                if (endVal) { var eDate = new Date(endVal + "T23:59:59"); if (objDate > eDate) return; }
+
+                if (day.records) {
+                    day.records.forEach(function(r) {
+                        var lim = r.limit !== undefined ? r.limit : (r.lim !== undefined ? r.lim : 1);
+                        if (lim === 0) {
+                            var sName = r.studentName || r.aluno;
+                            if(!evasaoStats[sName]) evasaoStats[sName] = 0;
+                            evasaoStats[sName]++;
+                        }
+                    });
+                }
+            });
         }
 
-        function openCurrentInfo() {
-            var data = infoTexts[currentView];
-            document.getElementById('info-modal-title').innerText = data.title;
-            document.getElementById('info-modal-body').innerHTML = data.body;
-            document.getElementById('info-modal').classList.add('active');
-        }
-        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
-        function handleOverlayClick(e) { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); }
+        var html = '';
+        var keys = Object.keys(evasaoStats).sort();
+        keys.forEach(function(k) {
+            html += '<div class="list-item"><strong class="list-item-title" style="color:var(--danger);">' + k + '</strong><span class="badge" style="background:rgba(231,76,60,0.1); color:var(--danger); padding:6px;">' + evasaoStats[k] + ' Fuga(s)</span></div>';
+        });
 
-        function initLabMechanics(viewId) {
-            if (viewId === 'decomposition') initDecomposition();
-            if (viewId === 'reflection') { currentRefLevel = 0; loadRefLevel(0); }
-            if (viewId === 'transmission') initTransmission();
-            if (viewId === 'absorption') setRoomLight('white');
-            if (viewId === 'addition') updateAdditiveMixing();
-        }
+        if (html === '') html = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Nenhuma evasão detectada no período.</div>';
+        container.innerHTML = html;
+    }
 
-        /* 1. DECOMPOSIÇÃO */
-        function initDecomposition() {
-            var canvas = document.getElementById('decomposition-canvas'), ctx = canvas.getContext('2d'), slider = document.getElementById('decomp-slider'), banner = document.getElementById('decomp-success');
-            function draw() {
-                var w = canvas.parentElement.clientWidth || window.innerWidth - 24;
-                var h = canvas.parentElement.clientHeight || 240;
-                canvas.width = w; canvas.height = h; ctx.clearRect(0, 0, w, h);
-                var cx = w / 2, cy = h / 2 + 10, size = 70;
-                ctx.beginPath(); ctx.moveTo(cx, cy - size); ctx.lineTo(cx + size, cy + size); ctx.lineTo(cx - size, cy + size); ctx.closePath();
-                ctx.strokeStyle = '#41414c'; ctx.lineWidth = 3; ctx.stroke();
-                var val = parseInt(slider.value), startY = (h * (val / 100));
-                ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(cx - size/2, cy + size/4); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4; ctx.stroke();
-                if (val >= 42 && val <= 48) {
-                    banner.style.display = 'block';
-                    ctx.beginPath(); ctx.moveTo(cx - size/2, cy + size/4); ctx.lineTo(cx + size/2, cy + size/3); ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 3; ctx.stroke();
-                    var colors = ['#ff3333','#ff9933','#ffff33','#33ff33','#3399ff','#3333ff','#9933ff'];
-                    for(var i=0; i<colors.length; i++) {
-                        ctx.beginPath(); ctx.moveTo(cx + size/2, cy + size/3); ctx.lineTo(w, (h * 0.2) + (i * 22)); ctx.strokeStyle = colors[i]; ctx.lineWidth = 4; ctx.stroke();
-                    }
+    /* ---------- DETALHE TRANSPORTE ---------- */
+    function renderTransStudents() {
+        var trans = db.transports.find(function(t){ return t.id === currentTransId; });
+        var linkedContainer = document.getElementById('trans-linked-students-list'); var tName = (trans.name || '').toUpperCase(); var linkedHtml = ''; var countLinked = 0;
+        
+        var linkedAlunos = [];
+        db.classes.forEach(function(c) { if (c.students && !c.archived) { c.students.forEach(function(s) {
+            if(s && s.bus && s.bus.toUpperCase() === tName) { linkedAlunos.push({nome: s.name, className: c.className, turno: c.turno}); }
+        }); }});
+        
+        linkedAlunos.sort(function(a,b){ return a.nome.localeCompare(b.nome); });
+        linkedAlunos.forEach(function(s) { countLinked++; linkedHtml += '<div class="list-item" style="background:#f8f9fa;"><div class="student-info"><strong class="list-item-title">' + s.nome + '</strong><span class="list-item-sub"><span class="material-icons" style="font-size:0.9rem;">school</span> ' + s.className + ' (' + (s.turno||'Matutino') + ')</span></div><span class="material-icons" style="color:var(--border); font-size:1.2rem;">lock</span></div>'; });
+
+        if(countLinked === 0) linkedHtml = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Nenhum aluno das turmas detectado nesta rota.</div>';
+        linkedContainer.innerHTML = linkedHtml;
+
+        var manualContainer = document.getElementById('trans-students-visual-list');
+        if(!trans.manualStudents || trans.manualStudents.length === 0) { manualContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Nenhuma adição extra.</div>'; return; }
+        
+        trans.manualStudents.sort(function(a,b){ return a.localeCompare(b); });
+        var html = '';
+        trans.manualStudents.forEach(function(name, idx) { html += '<div class="list-item"><strong class="list-item-title">' + name + '</strong><button class="icon-action" onclick="removeStudentFromTrans('+idx+')"><span class="material-icons">delete</span></button></div>'; });
+        manualContainer.innerHTML = html;
+    }
+
+    function addManualStudentToTrans() {
+        var raw = document.getElementById('new-trans-student-raw').value.trim(); if(!raw) return;
+        var trans = db.transports.find(function(t){ return t.id === currentTransId; }); var names = raw.split(/[,;\n]/).map(function(n){ return n.trim().toUpperCase(); }).filter(function(n){ return n; });
+        if(names.length > 0) { if(!trans.manualStudents) trans.manualStudents = []; trans.manualStudents = trans.manualStudents.concat(names); save(); renderTransStudents(); document.getElementById('new-trans-student-raw').value = ''; toast("Incluído(s) na rota!"); transInitialState = getTransFormState(); }
+    }
+
+    function removeStudentFromTrans(idx) { var trans = db.transports.find(function(t){ return t.id === currentTransId; }); trans.manualStudents.splice(idx, 1); save(); renderTransStudents(); transInitialState = getTransFormState(); }
+    
+    function loadTransData(trans) { 
+        document.getElementById('trans-name').value = trans.name || ''; document.getElementById('trans-turno').value = trans.turno || 'Matutino'; 
+        document.getElementById('trans-monitor').value = trans.monitorName || ''; document.getElementById('trans-wpp').value = trans.wpp || ''; 
+        renderTransStudents(); 
+        setTimeout(function(){ transInitialState = getTransFormState(); }, 100);
+    }
+    
+    function salvarTransporteAtual() { 
+        var trans = db.transports.find(function(t){ return t.id === currentTransId; }); 
+        trans.monitorName = document.getElementById('trans-monitor').value.trim(); trans.wpp = document.getElementById('trans-wpp').value.replace(/\D/g, ''); 
+        save(); toast("Ficha salva!"); transInitialState = getTransFormState();
+    }
+
+    /* ---------- COMUNICAÇÃO WPP E JSON ---------- */
+    function sendWppString(phone, text) {
+        var encodedText = encodeURIComponent(text); var urlNative = phone ? "whatsapp://send?phone=55" + phone + "&text=" + encodedText : "whatsapp://send?text=" + encodedText; var urlWeb = phone ? "https://api.whatsapp.com/send?phone=55" + phone + "&text=" + encodedText : "https://api.whatsapp.com/send?text=" + encodedText;
+        if (window.AppInventor) { window.AppInventor.setWebViewString(urlNative); } else { window.open(urlWeb, '_blank'); } toast("Enviando...");
+    }
+
+    function buildClassJSON(cls) {
+        var limits = cls.useUniversal ? db.config.universalLimits : cls.customLimits; var mxOut = cls.useUniversal ? db.config.maxOut : cls.maxOut; var pMgr = db.config.managers.find(function(m){ return m.isPrimary; }) || db.config.managers[0]; var coordP = pMgr ? pMgr.phone : "";
+        var jsonObj = { metadata: { app: "SLGestao", turma: cls.className, prof: cls.profName, status: cls.status, pitch: db.config.pitchMsg }, max_out: mxOut, limites: limits, intervalo: cls.breakTime || "09:20", telefone: coordP, alunos: (cls.students || []).map(function(s){ return { nome: s.name, onibus: s.bus }; }) }; return JSON.stringify(jsonObj);
+    }
+    function fastExportJson(id) { var cls = db.classes.find(function(c){ return c.id === id; }); if(!cls.wpp) return customAlert("WhatsApp do professor não cadastrado."); sendWppString(cls.wpp, buildClassJSON(cls)); }
+    function exportarJsonTurma() { salvarTurmaAtual(); var cls = db.classes.find(function(c){ return c.id === currentClassId; }); if(!cls.wpp) return customAlert("Cadastre o Wpp do professor."); sendWppString(cls.wpp, buildClassJSON(cls)); }
+    function enviarApresentacao() { salvarTurmaAtual(); var cls = db.classes.find(function(c){ return c.id === currentClassId; }); if(!cls.wpp) return customAlert("Cadastre o Wpp do professor."); var msg = db.config.pitchMsg || ""; msg = msg.replace(/\[PROF\]/g, cls.profName).replace(/\[TURMA\]/g, cls.className); if(db.config.apkLink) msg += "\n\n📥 Link do App: " + db.config.apkLink; sendWppString(cls.wpp, msg); }
+
+    function buildTransportJSON(trans) {
+        var alunosMap = {}; var tName = (trans.name || '').toUpperCase();
+        db.classes.forEach(function(c) { if (c.students && !c.archived) { c.students.forEach(function(s) { if(s && s.bus && s.bus.toUpperCase() === tName) { alunosMap[s.name.toUpperCase()] = { nome: s.name, turma: c.className }; } }); }});
+        if(trans.manualStudents) { trans.manualStudents.forEach(function(m) { if(!alunosMap[m]) alunosMap[m] = { nome: m, turma: "Convidado/Extra" }; }); }
+        var arrAlunos = Object.keys(alunosMap).map(function(k) { return alunosMap[k]; }); var arrGestores = db.config.managers.map(function(m) { return { nome: m.name, telefone: m.phone }; });
+        var jsonObj = { metadata: { app: "SLMonitor", transporte: trans.name, monitor: trans.monitorName }, gestores: arrGestores, alunos: arrAlunos }; return JSON.stringify(jsonObj);
+    }
+    function exportarJsonTransporte() { salvarTransporteAtual(); var trans = db.transports.find(function(t){ return t.id === currentTransId; }); if(!trans.wpp) return customAlert("Cadastre o WhatsApp do monitor."); sendWppString(trans.wpp, buildTransportJSON(trans)); }
+    function exportarJsonTransporteRapido(id) { var trans = db.transports.find(function(t){ return t.id === id; }); if(!trans.wpp) return customAlert("Sem número para envio."); sendWppString(trans.wpp, buildTransportJSON(trans)); }
+
+    /* ---------- BACKUP E NUVEM ---------- */
+    function getBackupDataString() { var backupData = { app: "SLGestao_Backup", timestamp: new Date().toISOString(), config: db.config, classes: db.classes, transports: db.transports }; return JSON.stringify(backupData); }
+    function abrirModalExportBackup() { if(db.classes.length === 0) return customAlert("O sistema está vazio."); document.getElementById('modal-export-backup').style.display = 'flex'; }
+    function copiarBackupGeral() { var str = getBackupDataString(); var area = document.getElementById('clipboard-area'); area.value = str; area.select(); document.execCommand('copy'); toast("Dados copiados para a área de transferência!"); fecharModais(); }
+    function enviarBackupWpp() { var str = getBackupDataString(); var pMgr = db.config.managers.find(function(m){ return m.isPrimary; }) || db.config.managers[0]; var phone = pMgr ? pMgr.phone : ''; sendWppString(phone, str); fecharModais(); }
+    function abrirModalRestaurarBackup() { document.getElementById('input-backup-json').value = ''; document.getElementById('modal-restaurar-backup').style.display = 'flex'; }
+    
+    function restaurarBackupGeral() {
+        var raw = document.getElementById('input-backup-json').value.trim(); if(!raw) return customAlert("Insira as credenciais de base de dados.");
+        try {
+            var data = JSON.parse(raw); if (data.app !== "SLGestao_Backup" && data.app !== "SLGestao_Nuvem") return customAlert("Dados de restauração incompatíveis.");
+            customConfirm("Isto vai sobrepor TODA a base de dados residente. Prossigo?", function() {
+                db.config = data.config; db.classes = data.classes || []; db.transports = data.transports || []; 
+                db.classes.forEach(function(c) { if(!c.turno) c.turno = 'Matutino'; if(!c.segmento) c.segmento = 'Ensino Fundamental'; if(typeof c.archived === 'undefined') c.archived = false; }); db.transports.forEach(function(t) { if(!t.turno) t.turno = 'Matutino'; });
+                save(); fecharModais(); aplicarTema(db.config.themeHex);
+                if (document.querySelector('.screen.active').id === 'screen-settings') loadUniversalSettings(); renderHome(); renderDashboard(); toast("Ecossistema restabelecido!");
+            }, "Restabelecimento", true, "CONFIRMAR INJEÇÃO");
+        } catch(e) { customAlert("Leitura de código corrompida."); }
+    }
+    function confirmarResetGeral() { customConfirm("Essa ação limpará integralmente o Local Storage de seu navegador. Não haverá volta.", function() { localStorage.clear(); location.reload(); }, "Destruição Categórica", true, "APAGAR BANCO"); }
+
+    /* Integração PULL/PUSH com Nuvem (APIs Fetch) */
+    async function salvarBackupNuvem() {
+        if (!db.config.nuvemUrl) return customAlert("Configure a URL do Web App na aba Sistema e Regras primeiro.");
+        fecharModais(); toast("Sincronizando com a nuvem... Aguarde.");
+        var payload = { action: 'backup', db: db };
+        try {
+            let response = await fetch(db.config.nuvemUrl, { method: 'POST', body: JSON.stringify(payload) });
+            let result = await response.json();
+            if (result.success) toast("Backup salvo na nuvem com sucesso!"); else customAlert("Erro na nuvem: " + result.error);
+        } catch (e) { customAlert("Falha na conexão. Verifique o link e sua internet."); }
+    }
+
+    async function sincronizarNuvem(silent = false) {
+        if (!db.config.nuvemUrl) {
+            if (!silent) customAlert("Configure a URL do Web App (Nuvem) nas Configurações.");
+            return;
+        }
+        if (!silent) toast("Sincronizando dados com a nuvem...");
+        
+        try {
+            let response = await fetch(db.config.nuvemUrl + "?action=get_full_db");
+            let result = await response.json();
+            
+            if (result.success && result.data) {
+                db = result.data;
+                db.classes = db.classes || []; db.transports = db.transports || []; 
+                db.classes.forEach(function(c) { if(!c.turno) c.turno = 'Matutino'; if(!c.segmento) c.segmento = 'Ensino Fundamental'; if(typeof c.archived === 'undefined') c.archived = false; }); db.transports.forEach(function(t) { if(!t.turno) t.turno = 'Matutino'; });
+                save(); aplicarTema(db.config.themeHex);
+                
+                var activeScreen = document.querySelector('.screen.active');
+                if (activeScreen && activeScreen.id === 'screen-class-detail' && currentClassId) {
+                    var cls = db.classes.find(function(c){ return c.id === currentClassId; });
+                    if(cls) loadClassData(cls);
                 } else {
-                    banner.style.display = 'none';
-                    ctx.beginPath(); ctx.moveTo(cx - size/2, cy + size/4); ctx.lineTo(cx + size/2, cy + size/2); ctx.lineTo(w, cy + size * 1.2); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
+                    if (document.querySelector('.screen.active').id === 'screen-settings') loadUniversalSettings();
+                    renderHome(); renderDashboard();
                 }
-            }
-            slider.oninput = draw; window.addEventListener('resize', draw); draw();
-        }
-
-        /* 2. REFLEXÃO - MOTOR FÍSICO COM FASES */
-        var currentRefLevel = 0;
-        var refLevels = [
-            { cols: 4, rows: 5, emitter: {x:0, y:1, dx:1, dy:0}, target: {x:2, y:4}, mirrors: [{x:2, y:1, st:0}], blocks: [] }, // Fase 1
-            { cols: 4, rows: 5, emitter: {x:0, y:1, dx:1, dy:0}, target: {x:3, y:3}, mirrors: [{x:1, y:1, st:0}, {x:1, y:3, st:0}], blocks: [] }, // Fase 2
-            { cols: 4, rows: 5, emitter: {x:0, y:4, dx:0, dy:-1}, target: {x:3, y:3}, mirrors: [{x:0, y:1, st:0}, {x:2, y:1, st:0}, {x:2, y:3, st:0}], blocks: [{x:1, y:2}] }, // Fase 3
-            { cols: 4, rows: 5, emitter: {x:0, y:0, dx:1, dy:0}, target: {x:1, y:2}, mirrors: [{x:3, y:0, st:0}, {x:3, y:4, st:0}, {x:0, y:4, st:0}, {x:0, y:2, st:0}], blocks: [{x:1, y:1}, {x:2, y:1}, {x:2, y:3}, {x:1, y:3}] } // Fase 4
-        ];
-
-        function loadRefLevel(idx) {
-            currentRefLevel = idx; var lvl = refLevels[idx];
-            var grid = document.getElementById('reflection-grid'); grid.innerHTML = '';
-            grid.style.gridTemplateColumns = 'repeat(' + lvl.cols + ', 1fr)'; grid.style.gridTemplateRows = 'repeat(' + lvl.rows + ', 1fr)';
-            for (var i = 0; i < lvl.mirrors.length; i++) lvl.mirrors[i].st = 0;
-
-            for (var y = 0; y < lvl.rows; y++) {
-                for (var x = 0; x < lvl.cols; x++) {
-                    var cell = document.createElement('div'); cell.className = 'grid-cell'; var html = '';
-                    if (x === lvl.emitter.x && y === lvl.emitter.y) {
-                        var rot = '0deg'; if(lvl.emitter.dx === -1) rot='180deg'; if(lvl.emitter.dy === -1) rot='-90deg'; if(lvl.emitter.dy === 1) rot='90deg';
-                        html = '<div class="cell-element emitter-icon" style="transform: rotate('+rot+')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 13h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>';
-                    } else if (x === lvl.target.x && y === lvl.target.y) {
-                        html = '<div class="cell-element target-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 5l6.43 11H5.57L12 7z"/></svg></div>';
-                    } else {
-                        var isM = false;
-                        for (var m = 0; m < lvl.mirrors.length; m++) {
-                            if (lvl.mirrors[m].x === x && lvl.mirrors[m].y === y) {
-                                html = '<div class="cell-element mirror-element deg0" id="m'+m+'" onclick="rotateMirror('+m+')"><div class="mirror-line"></div></div>'; isM = true; break;
-                            }
-                        }
-                        if (!isM) {
-                            for (var b = 0; b < lvl.blocks.length; b++) {
-                                if (lvl.blocks[b].x === x && lvl.blocks[b].y === y) { html = '<div class="cell-element" style="background:#29292e; border-radius:4px;"></div>'; break; }
-                            }
-                        }
-                    }
-                    cell.innerHTML = html; grid.appendChild(cell);
-                }
-            }
-            document.getElementById('ref-level-text').innerText = "Fase " + (idx + 1) + "/4";
-            document.getElementById('reflection-next-btn').style.display = 'none';
-            traceLaser();
-        }
-
-        function rotateMirror(mIdx) {
-            var m = refLevels[currentRefLevel].mirrors[mIdx]; m.st = (m.st + 1) % 3;
-            var el = document.getElementById('m' + mIdx);
-            el.className = m.st === 0 ? "cell-element mirror-element deg0" : (m.st === 1 ? "cell-element mirror-element deg45" : "cell-element mirror-element deg135");
-            traceLaser();
-        }
-
-        function nextRefLevel() { if (currentRefLevel < 3) loadRefLevel(currentRefLevel + 1); }
-
-        function traceLaser() {
-            var canvas = document.getElementById('reflection-canvas'), ctx = canvas.getContext('2d'), area = document.getElementById('reflection-area');
-            var banner = document.getElementById('reflection-success'), nextBtn = document.getElementById('reflection-next-btn');
-            var w = area.clientWidth || window.innerWidth - 24, h = area.clientHeight || 240;
-            canvas.width = w; canvas.height = h; ctx.clearRect(0, 0, w, h);
-            var lvl = refLevels[currentRefLevel], cw = w / lvl.cols, ch = h / lvl.rows;
-            var px = lvl.emitter.x, py = lvl.emitter.y, dx = lvl.emitter.dx, dy = lvl.emitter.dy;
-            var points = [{x: (px * cw) + cw/2, y: (py * ch) + ch/2}];
-            var steps = 0, win = false;
-
-            while (steps < 40) {
-                steps++; px += dx; py += dy;
-                if (px < 0 || px >= lvl.cols || py < 0 || py >= lvl.rows) {
-                    points.push({x: (px * cw) + cw/2 - (dx * cw/2), y: (py * ch) + ch/2 - (dy * ch/2)}); break;
-                }
-                points.push({x: (px * cw) + cw/2, y: (py * ch) + ch/2});
-                if (px === lvl.target.x && py === lvl.target.y) { win = true; break; }
                 
-                var hitB = false; for(var b=0; b<lvl.blocks.length; b++) { if(lvl.blocks[b].x===px && lvl.blocks[b].y===py) hitB=true; }
-                if (hitB) break;
-                
-                // Física Universal de Reflexão
-                for(var m=0; m<lvl.mirrors.length; m++) {
-                    if(lvl.mirrors[m].x === px && lvl.mirrors[m].y === py) {
-                        var st = lvl.mirrors[m].st;
-                        if (st === 1) { // '\'
-                            if(dx===1){dx=0;dy=1;} else if(dx===-1){dx=0;dy=-1;} else if(dy===1){dx=1;dy=0;} else if(dy===-1){dx=-1;dy=0;}
-                        } else if (st === 2) { // '/'
-                            if(dx===1){dx=0;dy=-1;} else if(dx===-1){dx=0;dy=1;} else if(dy===1){dx=-1;dy=0;} else if(dy===-1){dx=1;dy=0;}
-                        }
-                    }
-                }
-            }
-
-            ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y);
-            for(var j=1; j<points.length; j++) ctx.lineTo(points[j].x, points[j].y);
-            ctx.strokeStyle = '#ff3333'; ctx.lineWidth = 4; ctx.shadowColor = '#ff3333'; ctx.shadowBlur = 10; ctx.stroke();
-
-            if (win) {
-                banner.style.display = 'block'; banner.innerText = currentRefLevel < 3 ? "Alvo Atingido!" : "Desafio Final Concluído!";
-                nextBtn.style.display = currentRefLevel < 3 ? 'flex' : 'none';
+                if (!silent) { fecharModais(); toast("Frequências atualizadas da Nuvem!"); }
             } else {
-                banner.style.display = 'none'; nextBtn.style.display = 'none';
+                if (!silent) customAlert(result.error || "Erro ao resgatar dados.");
             }
+        } catch (e) {
+            if (!silent) customAlert("Falha na conexão de sincronização.");
         }
+    }
 
-        /* 3. TRANSMISSÃO */
-        var activeF = { r: false, g: false, b: false };
-        function initTransmission() {
-            var canvas = document.getElementById('transmission-canvas'), ctx = canvas.getContext('2d');
-            function draw() {
-                var w = canvas.parentElement.clientWidth || window.innerWidth - 24, h = canvas.parentElement.clientHeight || 240;
-                canvas.width = w; canvas.height = h; ctx.clearRect(0, 0, w, h);
-                var midY = h / 2, sec = w / 4;
-                var colors = { r: '#ff3333', g: '#33ff33', b: '#3333ff' }, keys = ['r', 'g', 'b'];
-                for (var i = 0; i < 3; i++) {
-                    var key = keys[i], xp = sec * (i + 1);
-                    ctx.strokeStyle = activeF[key] ? colors[key] : '#29292e'; ctx.lineWidth = activeF[key] ? 4 : 1;
-                    ctx.setLineDash(activeF[key] ? [] : [4,4]); ctx.strokeRect(xp - 15, midY - 50, 30, 100); ctx.setLineDash([]);
+    async function restaurarDaNuvem() {
+        customConfirm("Isto vai sobrepor TODA a base local com os dados da nuvem. Prossigo?", function() { sincronizarNuvem(); }, "Restauração da Nuvem", true, "CONFIRMAR INJEÇÃO");
+    }
+
+    async function buscarAuditoriaNuvem() {
+        var year = document.getElementById('audit-year').value;
+        var container = document.getElementById('audit-results');
+        if(!year) return customAlert("Informe um ano de referência válido.");
+        if(!db.config.nuvemUrl) return customAlert("Configure a URL do Web App (Nuvem) nas Configurações.");
+        
+        container.innerHTML = '<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--text-muted);"><span class="material-icons" style="font-size:3rem; color:var(--primary); animation: fadeIn 1s infinite alternate;">sync</span><br><br>Sondando banco de dados <strong>' + year + '</strong> no Drive...</div>';
+
+        try {
+            let response = await fetch(db.config.nuvemUrl + "?action=audit&year=" + year);
+            let result = await response.json();
+            
+            if (result.success && result.data && result.data.classes) {
+                var archClasses = result.data.classes.filter(function(c) { return c.archived; });
+                if (archClasses.length === 0) {
+                    container.innerHTML = '<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--text-muted);">Nenhuma turma arquivada encontrada neste ano.</div>';
+                    return;
                 }
-                ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(sec, midY); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 5; ctx.stroke();
-                var c2 = activeF.r ? '#ff3333' : '#ffffff';
-                ctx.beginPath(); ctx.moveTo(sec, midY); ctx.lineTo(sec*2, midY); ctx.strokeStyle = c2; ctx.lineWidth = c2 === '#000000' ? 1 : 5; ctx.stroke();
-                var c3 = c2; if(activeF.g){ c3 = c3==='#ffffff' ? '#33ff33' : '#000000'; }
-                ctx.beginPath(); ctx.moveTo(sec*2, midY); ctx.lineTo(sec*3, midY); ctx.strokeStyle = c3; ctx.lineWidth = c3 === '#000000' ? 1 : 5; ctx.stroke();
-                var c4 = c3; if(activeF.b){ c4 = c4==='#ffffff' ? '#3333ff' : '#000000'; }
-                ctx.beginPath(); ctx.moveTo(sec*3, midY); ctx.lineTo(w-20, midY); ctx.strokeStyle = c4; ctx.lineWidth = c4 === '#000000' ? 1 : 5; ctx.stroke();
-                ctx.beginPath(); ctx.arc(w-15, midY, 12, 0, 2*Math.PI); ctx.fillStyle = c4==='#000000' ? '#121214' : c4; ctx.fill();
+                var archSorted = archClasses.sort(function(a,b) { return (a.className || '').localeCompare(b.className || ''); });
+                container.innerHTML = archSorted.map(function(cls) {
+                    return '<div class="card archived" style="opacity:0.85;"><div class="card-header" style="border-bottom:none; padding-bottom:15px;"><div style="flex:1;"><div class="card-title" style="color:var(--text-main);">'+cls.className+'</div><div class="card-subtitle"><span class="material-icons" style="font-size:1rem;">person</span> '+cls.profName+'</div></div></div><div class="card-band bg-none" style="background:#bdc3c7;"><span>'+year+'</span><span style="display:flex; align-items:center; gap:5px;"><span class="material-icons" style="font-size:1.1rem;">history</span>Histórico</span></div><div class="card-footer" style="justify-content:center;"><button class="btn btn-outline" style="width:100%; margin:0; padding:8px;" onclick="customAlert(\'Modo Leitura. Apenas consulta disponível nesta visualização.\')">Acessar Relatório</button></div></div>';
+                }).join('');
+            } else { container.innerHTML = '<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--danger);">' + (result.error || 'Nenhum dado encontrado para este ano.') + '</div>'; }
+        } catch (e) { container.innerHTML = '<div style="grid-column:1/-1; padding:40px; text-align:center; color:var(--danger);">Falha de conexão com a Nuvem. Verifique o link e sua internet.</div>'; }
+    }
+
+    /* ---------- FREQUÊNCIA E DASHBOARD ---------- */
+    function anexarLogsNaTurma(jsonRaw, turmaId) {
+        try {
+            var data = JSON.parse(jsonRaw); var cls; 
+            if (turmaId) cls = db.classes.find(function(c){ return c.id === parseInt(turmaId); }); else { if (currentClassId) cls = db.classes.find(function(c){ return c.id === currentClassId; }); else return customAlert("Selecione uma turma."); }
+            if (!data.logs || !Array.isArray(data.logs)) return customAlert("Dados de frequência não reconhecidos.");
+            if (!cls.evolution) cls.evolution = [];
+            var diasNovos = 0;
+            data.logs.forEach(function(logDia) { 
+                var dataFormatada = logDia.date || logDia.data;
+                var jaExiste = cls.evolution.find(function(e){ return (e.date === dataFormatada || e.data === dataFormatada); }); 
+                if(!jaExiste) { cls.evolution.push(logDia); diasNovos++; } 
+            });
+            if(diasNovos > 0) { 
+                save(); toast(diasNovos + " novos diários incorporados!"); 
+                if (currentClassId === cls.id && document.getElementById('screen-class-detail').classList.contains('active')) { historyCurrentPage = 1; renderHistoryTimeline(); renderClassDashboard(); renderEvasaoList(); } 
+            } else { toast("Essas informações já constam na base."); }
+            return true;
+        } catch (e) { customAlert("Erro na leitura do pacote de dados."); return false; }
+    }
+
+    function processarDiarioTurma() { var raw = document.getElementById('import-diario-class').value.trim(); if(!raw) return customAlert("Cole o pacote de dados."); if (anexarLogsNaTurma(raw, currentClassId)) { document.getElementById('import-diario-class').value = ''; fecharModais(); } }
+    function abrirModalUploadGlobal() { document.getElementById('input-upload-global').value = ''; document.getElementById('select-turma-global').innerHTML = db.classes.filter(function(c){return !c.archived}).map(function(c){ return '<option value="'+c.id+'">'+c.className+' ('+c.profName+')</option>'; }).join(''); document.getElementById('modal-upload-global').style.display = 'flex'; }
+    function processarUploadGlobal() { var raw = document.getElementById('input-upload-global').value.trim(); var tId = document.getElementById('select-turma-global').value; if(!raw) return customAlert("Cole o pacote de dados."); if(anexarLogsNaTurma(raw, tId)) fecharModais(); }
+    function abrirModalDiarioClass() { document.getElementById('import-diario-class').value = ''; document.getElementById('modal-diario-class').style.display = 'flex'; }
+
+    function changeHistoryPage(delta) { historyCurrentPage += delta; renderHistoryTimeline(); }
+
+    function renderHistoryTimeline() {
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; }); var container = document.getElementById('history-timeline-container');
+        if (!cls.evolution || cls.evolution.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Sem registros extraídos.</div>'; return; }
+        
+        var evols = cls.evolution.slice().sort(function(a,b) { 
+            var da = (a.date||a.data).split('/'); var dbb = (b.date||b.data).split('/');
+            return new Date(dbb[2], dbb[1]-1, dbb[0]) - new Date(da[2], da[1]-1, da[0]);
+        });
+        
+        var totalPages = Math.ceil(evols.length / historyPerPage); if (historyCurrentPage > totalPages) historyCurrentPage = totalPages; if (historyCurrentPage < 1) historyCurrentPage = 1;
+        var start = (historyCurrentPage - 1) * historyPerPage; var pageEvols = evols.slice(start, start + historyPerPage);
+
+        var html = pageEvols.map(function(day) {
+            var dataLabel = day.date || day.data; var faltas = (day.absentes || day.faltas || []).map(function(f){ return '<span>&bull; '+f+'</span>'; }).join(', ');
+            var ocorrencias = (day.records || []).map(function(r) { 
+                var n = r.count || r.n || 0;
+                var lim = r.limit !== undefined ? r.limit : (r.lim !== undefined ? r.lim : 1);
+                var isFuga = (lim === 0);
+                var isExcesso = (n > lim && lim > 0);
+                
+                if (!isFuga && !isExcesso) return ''; 
+                
+                var catName = r.categoryName || r.cat; 
+                var stdName = r.studentName || r.aluno; 
+                var badgeHtml = '';
+                
+                if (isFuga) { badgeHtml = '<span style="color:var(--danger); font-weight:bold;">Saída sem autorização</span>'; } 
+                else if (isExcesso) { var excessCount = n - lim; badgeHtml = '<span style="color:var(--warning); font-weight:bold;">+' + excessCount + ' excedente(s)</span>'; }
+                
+                return '<div style="display:flex; justify-content:space-between; font-size:0.85rem; padding:4px 0; border-bottom:1px solid var(--border);"><span>' + stdName + ' <small style="color:var(--text-muted);">(' + catName + ')</small></span><span>' + badgeHtml + '</span></div>';
+            }).join('');
+            
+            if(!faltas && !ocorrencias) return ''; 
+            return '<div class="list-item" style="flex-direction:column; align-items:stretch;"><div style="font-weight:bold; color:var(--primary-dark); font-size:1rem; margin-bottom:8px; border-bottom:1px dashed var(--border); padding-bottom:5px;"><span class="material-icons" style="font-size:0.9rem; vertical-align:middle;">calendar_today</span> '+dataLabel+'</div><div style="margin-bottom:8px;">'+(faltas ? '<strong style="font-size:0.8rem; color:var(--text-muted);">Ausentes: </strong><span style="font-size:0.8rem;">'+faltas+'</span>' : '')+'</div><div>'+(ocorrencias ? '<strong style="font-size:0.8rem; color:var(--text-muted);">Indisciplina:</strong>'+ocorrencias : '<span style="font-size:0.8rem; color:var(--text-muted);">Tudo tranquilo (Sem excessos).</span>')+'</div></div>';
+        }).join('');
+
+        if (totalPages > 1) {
+            html += '<div style="display:flex; justify-content:space-between; margin-top:10px; background:var(--bg); border-radius:8px; padding:5px;">';
+            html += '<button class="btn btn-outline" style="flex:1; margin:0; font-size:0.8rem; border:none; background:transparent;" onclick="changeHistoryPage(-1)" '+(historyCurrentPage===1?'disabled':'')+'>Anterior</button>';
+            html += '<div style="display:flex; align-items:center; flex:1; justify-content:center; font-size:0.8rem; font-weight:bold; color:var(--text-muted);">'+historyCurrentPage+' / '+totalPages+'</div>';
+            html += '<button class="btn btn-outline" style="flex:1; margin:0; font-size:0.8rem; border:none; background:transparent;" onclick="changeHistoryPage(1)" '+(historyCurrentPage===totalPages?'disabled':'')+'>Próxima</button>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    function renderClassDashboard() {
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; }); var dashArea = document.getElementById('class-dashboard-area');
+        if (!cls.evolution || cls.evolution.length === 0) { dashArea.style.display = 'none'; return; } dashArea.style.display = 'block';
+        
+        var totalDays = cls.evolution.length; var catCounts = {}; var studentCounts = {};
+        cls.evolution.forEach(function(day) { if(day.records) { day.records.forEach(function(r) {
+            var n = r.count || r.n || 0;
+            var lim = r.limit !== undefined ? r.limit : (r.lim !== undefined ? r.lim : 1);
+            var isFuga = (lim === 0);
+            var isExcesso = (n > lim && lim > 0);
+            
+            if (isFuga || isExcesso) {
+                var cName = isFuga ? 'Saída Fuga' : (r.categoryName || r.cat); 
+                var sName = r.studentName || r.aluno; 
+                var peso = isFuga ? 1 : (n - lim); 
+                if(!catCounts[cName]) catCounts[cName] = 0; catCounts[cName] += peso; if(!studentCounts[sName]) studentCounts[sName] = 0; studentCounts[sName] += peso;
             }
-            window.toggleFilter = function(k) { activeF[k] = !activeF[k]; document.getElementById('filter-'+k).className = activeF[k] ? 'filter-slot active-'+k : 'filter-slot'; draw(); };
-            window.addEventListener('resize', draw); draw();
-        }
+        }); }});
+        var topCat = Object.keys(catCounts).sort(function(a,b){return catCounts[b]-catCounts[a]})[0] || '-';
+        var topStudent = Object.keys(studentCounts).sort(function(a,b){return studentCounts[b]-studentCounts[a]})[0] || '-';
 
-        /* 4. ABSORÇÃO */
-        function setRoomLight(c) {
-            var btns = document.querySelectorAll('.toggle-btn'); for(var i=0; i<btns.length; i++) btns[i].classList.remove('active');
-            document.getElementById('btn-light-'+c).classList.add('active');
-            var room = document.getElementById('dark-room'), straw = document.getElementById('obj-strawberry'), leaf = document.getElementById('obj-leaf');
-            if(c==='white'){ room.style.backgroundColor='#1a1a1e'; straw.style.fill='#ff4d4d'; leaf.style.fill='#4dff4d'; }
-            else if(c==='red'){ room.style.backgroundColor='#400000'; straw.style.fill='#ff4d4d'; leaf.style.fill='#121214'; }
-            else if(c==='green'){ room.style.backgroundColor='#004000'; straw.style.fill='#121214'; leaf.style.fill='#4dff4d'; }
-            else if(c==='blue'){ room.style.backgroundColor='#000040'; straw.style.fill='#121214'; leaf.style.fill='#121214'; }
-        }
+        document.getElementById('dash-cards-turma').innerHTML = `
+            <div class="stat-box" style="padding:10px;"><strong style="font-size:1.2rem;">${totalDays}</strong><span style="font-size:0.65rem;">Dias Úteis</span></div>
+            <div class="stat-box" style="padding:10px;"><strong style="font-size:0.9rem; overflow:hidden; text-overflow:ellipsis; color:var(--warning);">${topCat}</strong><span style="font-size:0.65rem;">Infração Maior</span></div>
+            <div class="stat-box" style="padding:10px;"><strong style="font-size:0.9rem; overflow:hidden; text-overflow:ellipsis; color:var(--danger);">${topStudent}</strong><span style="font-size:0.65rem;">Infrações (Mapeado)</span></div>
+        `;
+    }
 
-        /* 5. ADITIVA */
-        function updateAdditiveMixing() {
-            var r = document.getElementById('slide-r').value, g = document.getElementById('slide-g').value, b = document.getElementById('slide-b').value;
-            document.getElementById('circle-red').style.backgroundColor = 'rgb('+r+',0,0)';
-            document.getElementById('circle-green').style.backgroundColor = 'rgb(0,'+g+',0)';
-            document.getElementById('circle-blue').style.backgroundColor = 'rgb(0,0,'+b+')';
-        }
+    function copiarRelatorioText() {
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; }); if (!cls.evolution || cls.evolution.length === 0) return customAlert("Não há dados para exportar.");
+        var text = "*RELATÓRIO " + cls.className.toUpperCase() + "*\n*Professor(a):* " + cls.profName + "\n\n";
+        
+        var evols = cls.evolution.slice().sort(function(a,b) { var da = (a.date||a.data).split('/'); var dbb = (b.date||b.data).split('/'); return new Date(da[2], da[1]-1, da[0]) - new Date(dbb[2], dbb[1]-1, dbb[0]); });
+        evols.forEach(function(day) { text += "*Data:* " + (day.date || day.data) + "\n"; var faltas = day.absentes || day.faltas || []; if(faltas.length > 0) text += "Faltas: " + faltas.join(', ') + "\n";
+            var recs = day.records || []; 
+            var indisciplinas = [];
+            recs.forEach(function(r) { 
+                var n = r.count || r.n || 0; var lim = r.limit !== undefined ? r.limit : (r.lim !== undefined ? r.lim : 1);
+                var isFuga = (lim === 0); var isExcesso = (n > lim && lim > 0);
+                if(isFuga || isExcesso) { var catName = isFuga ? 'Fuga' : (r.categoryName || r.cat); indisciplinas.push("- " + (r.studentName || r.aluno) + ": " + catName + " " + (isFuga ? '(Sem Autorização)' : '(+' + (n - lim) + ' excedente)')); }
+            }); 
+            if(indisciplinas.length > 0) { text += "Indisciplina/Alertas:\n" + indisciplinas.join("\n") + "\n"; } else text += "Sem intercorrências.\n"; text += "\n";
+        });
+        var area = document.getElementById('clipboard-area'); area.value = text; area.select(); document.execCommand('copy'); toast("Resumo copiado para a área de transferência.");
+    }
 
-        window.onload = function() { switchView('menu'); };
-    </script>
+    /* ---------- PDF ---------- */
+    function abrirModalPdfTurma() {
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; }); if(!cls.evolution || cls.evolution.length === 0) return customAlert("Não há histórico para gerar documento.");
+        var evols = cls.evolution.slice().sort(function(a,b) { var da = (a.date||a.data).split('/'); var dbb = (b.date||b.data).split('/'); return new Date(da[2], da[1]-1, da[0]) - new Date(dbb[2], dbb[1]-1, dbb[0]); });
+        var optionsHtml = evols.map(function(day, idx) { return '<option value="'+idx+'">' + (day.date || day.data) + '</option>'; }).join('');
+        document.getElementById('pdf-start-date').innerHTML = optionsHtml; document.getElementById('pdf-end-date').innerHTML = optionsHtml; document.getElementById('pdf-end-date').value = evols.length - 1; 
+        document.getElementById('modal-pdf-filter').style.display = 'flex';
+    }
+
+    function gerarPdfTurmaFiltrado() {
+        var startIdx = parseInt(document.getElementById('pdf-start-date').value); var endIdx = parseInt(document.getElementById('pdf-end-date').value);
+        if (startIdx > endIdx) return customAlert("A data inicial não pode ser superior à final.");
+        var cls = db.classes.find(function(c){ return c.id === currentClassId; });
+        var evols = cls.evolution.slice().sort(function(a,b) { var da = (a.date||a.data).split('/'); var dbb = (b.date||b.data).split('/'); return new Date(da[2], da[1]-1, da[0]) - new Date(dbb[2], dbb[1]-1, dbb[0]); });
+        var targetEvolution = evols.slice(startIdx, endIdx + 1);
+        fecharModais();
+        
+        var printArea = document.getElementById('print-area');
+        var html = '<div class="print-header"><h1>Painel de Ocorrências (Indisciplina)</h1><p>' + cls.className + ' - ' + (cls.turno||'Matutino') + ' | Resp: ' + cls.profName + '</p></div>';
+        
+        targetEvolution.forEach(function(day) {
+            var faltas = (day.absentes || day.faltas || []).join(', '); 
+            var recs = day.records || [];
+            var temOcorrencia = false;
+            var tableHtml = '<table class="print-table"><tr><th>Aluno</th><th>Categoria da Ocorrência</th><th>Volume</th></tr>';
+            recs.forEach(function(r) { 
+                var n = r.count || r.n || 0; var lim = r.limit !== undefined ? r.limit : (r.lim !== undefined ? r.lim : 1);
+                var isFuga = (lim === 0); var isExcesso = (n > lim && lim > 0);
+                if(isFuga || isExcesso) { temOcorrencia = true; var catName = isFuga ? 'Saída Sem Autorização' : (r.categoryName || r.cat); tableHtml += '<tr><td>' + (r.studentName || r.aluno) + '</td><td>' + catName + '</td><td>' + (isFuga ? 'Fuga (0 lim)' : '+' + (n-lim) + ' Excesso') + '</td></tr>'; } 
+            });
+            tableHtml += '</table>';
+
+            html += '<div style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; page-break-inside: avoid;">';
+            html += '<strong>Data Ref: ' + (day.date || day.data) + '</strong><br>';
+            if (faltas) html += '<p style="font-size:12px; margin:5px 0;"><strong>Ausentes:</strong> ' + faltas + '</p>';
+            if (temOcorrencia) { html += tableHtml; } else { html += '<p style="font-size:12px; color:#555;">Nenhuma intercorrência no perímetro de avaliação.</p>'; }
+            html += '</div>';
+        });
+        printArea.innerHTML = html; window.print();
+    }
+
+    function gerarPdfTransporte() {
+        var trans = db.transports.find(function(t){ return t.id === currentTransId; }); var printArea = document.getElementById('print-area');
+        var html = '<div class="print-header"><h1>Manifesto de Rota</h1><p>' + trans.name + ' (' + (trans.turno||'Matutino') + ') | Monitor: ' + trans.monitorName + '</p></div>';
+        var todosAlunos = []; var tName = (trans.name || '').toUpperCase();
+        
+        db.classes.forEach(function(c) { if (c.students && !c.archived) { c.students.forEach(function(s) { if(s && s.bus && s.bus.toUpperCase() === tName) { todosAlunos.push({ nome: s.name, turma: c.className, turno: (c.turno||'Matutino') }); }}); }});
+        if(trans.manualStudents) { trans.manualStudents.forEach(function(m) { todosAlunos.push({ nome: m, turma: "Extra", turno: (trans.turno||'Matutino') }); }); }
+        todosAlunos.sort(function(a,b){ return a.nome.localeCompare(b.nome); });
+
+        if (todosAlunos.length === 0) { html += '<p>Não há passageiros detectados.</p>'; } else {
+            html += '<div class="print-stats"><div><strong>' + todosAlunos.length + '</strong>Passageiros</div><div><strong>' + trans.name + '</strong>Identificador</div><div><strong>' + (trans.turno||'Matutino') + '</strong>Operação</div></div>';
+            html += '<table class="print-table"><tr><th>Nome do Aluno</th><th>Série / Turma</th><th>Turno Escolar</th></tr>';
+            todosAlunos.forEach(function(aluno) { html += '<tr><td>' + aluno.nome + '</td><td>' + aluno.turma + '</td><td>' + aluno.turno + '</td></tr>'; });
+            html += '</table>';
+        }
+        printArea.innerHTML = html; window.print();
+    }
+
+    /* ---------- DEFINIÇÕES DE SISTEMA ---------- */
+    function renderManagersList() {
+        var c = document.getElementById('managers-list'); if(db.config.managers.length === 0) { c.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:10px;">Equipe vazia.</div>'; return; }
+        c.innerHTML = db.config.managers.map(function(m) { return '<div class="list-item '+(m.isPrimary ? 'active' : '')+'"><div class="student-info"><strong class="list-item-title">'+m.name+' '+(m.isPrimary ? '<span class="material-icons" style="color:var(--primary); font-size:1rem; vertical-align:middle;">star</span>' : '')+'</strong><span class="list-item-sub">'+m.phone+'</span></div><div>'+(!m.isPrimary ? '<button class="icon-action" onclick="setPrimaryManager('+m.id+')"><span class="material-icons" style="color:var(--primary);">star_border</span></button>' : '')+'<button class="icon-action" onclick="removeManager('+m.id+')"><span class="material-icons">delete</span></button></div></div>'; }).join('');
+    }
+
+    function addManager() {
+        var n = document.getElementById('new-mgr-name').value.trim(); var p = document.getElementById('new-mgr-wpp').value.replace(/\D/g, '');
+        if(!n || !p) return customAlert("Prencha as informações do Gestor."); var isP = db.config.managers.length === 0; 
+        db.config.managers.push({ id: Date.now(), name: n, phone: p, isPrimary: isP });
+        save(); document.getElementById('new-mgr-name').value = ''; document.getElementById('new-mgr-wpp').value = ''; renderManagersList();
+    }
+    
+    function removeManager(id) { db.config.managers = db.config.managers.filter(function(m){ return m.id !== id; }); if(db.config.managers.length>0 && !db.config.managers.find(function(x){ return x.isPrimary; })) db.config.managers[0].isPrimary = true; save(); renderManagersList(); }
+    function setPrimaryManager(id) { db.config.managers.forEach(function(m){ m.isPrimary = (m.id === id); }); save(); renderManagersList(); }
+
+    function loadUniversalSettings() {
+        document.getElementById('univ-max-out').value = db.config.maxOut; document.getElementById('univ-lim-banheiro').value = db.config.universalLimits.banheiro; document.getElementById('univ-lim-agua').value = db.config.universalLimits.agua; document.getElementById('univ-lim-externo').value = db.config.universalLimits.externo;
+        document.getElementById('config-pitch').value = db.config.pitchMsg; document.getElementById('config-apk-link').value = db.config.apkLink; document.getElementById('theme-color-picker').value = db.config.themeHex || '#38cde0'; document.getElementById('config-nuvem-url').value = db.config.nuvemUrl || ''; renderManagersList();
+    }
+
+    function salvarConfiguracoesUniversais() {
+        db.config.maxOut = parseInt(document.getElementById('univ-max-out').value) || 1; db.config.universalLimits = { banheiro: parseInt(document.getElementById('univ-lim-banheiro').value) || 0, agua: parseInt(document.getElementById('univ-lim-agua').value) || 0, externo: parseInt(document.getElementById('univ-lim-externo').value) || 0 };
+        db.config.pitchMsg = document.getElementById('config-pitch').value; db.config.apkLink = document.getElementById('config-apk-link').value; db.config.themeHex = document.getElementById('theme-color-picker').value; db.config.nuvemUrl = document.getElementById('config-nuvem-url').value.trim();
+        save(); aplicarTema(db.config.themeHex); toast("Parâmetros do sistema atualizados.");
+    }
+
+    function renderDashboard() {
+        var stable = 0, unstable = 0, none = 0; var htmlList = '';
+        var activeClasses = db.classes.filter(function(c) { return !c.archived; });
+        activeClasses.forEach(function(cls) {
+            if(cls.status === 'stable') stable++; else if(cls.status === 'unstable') unstable++; else none++;
+            var st = getStatusInfo(cls.status);
+            htmlList += '<div class="card" onclick="currentClassId='+cls.id+'; navTo(\'class-detail\');" style="margin-bottom:15px; cursor:pointer; box-shadow:none;"><div class="card-header" style="border-bottom:none; padding-bottom:15px;"><div style="flex:1;"><div class="card-title" style="font-size:1.1rem;">'+cls.className+'</div><div class="card-subtitle"><span class="material-icons" style="font-size:0.9rem;">person</span> '+cls.profName+'</div></div></div><div class="card-band '+st.bgClass+'"><span>'+cls.turno.toUpperCase()+'</span><span style="display:flex; align-items:center; gap:5px;"><span class="material-icons" style="font-size:1.1rem;">'+st.icon+'</span>'+st.label+'</span></div></div>';
+        });
+        document.getElementById('dash-st').innerText = stable; document.getElementById('dash-un').innerText = unstable; document.getElementById('dash-no').innerText = none; document.getElementById('dash-lists').innerHTML = htmlList || '<p style="text-align:center; color:var(--text-muted); width:100%; padding:20px;">Ecossistema vazio.</p>';
+    }
+
+    init();
+</script>
 </body>
 </html>
